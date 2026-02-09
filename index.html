@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP DAY - Spin & Win</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-gold: #d4af37;
+            --vip-black: #111111;
+            --card-bg: #fffafa;
+            --accent-red: #ff4d4d;
+        }
+
+        body {
+            font-family: 'Arial Black', Gadget, sans-serif;
+            background-color: var(--vip-black);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* VIP Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin: 0;
+            background: linear-gradient(to bottom, #fff, var(--primary-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        /* The Game Area */
+        .carousel-container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            height: 220px;
+            background: var(--card-bg);
+            border: 8px solid var(--primary-gold);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Fixed Pointer Arrow */
+        .pointer {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0; 
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 35px solid var(--accent-red);
+            z-index: 20;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+        }
+
+        /* The Moving Track */
+        .prize-track {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding-left: 0;
+            transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
+        }
+
+        .prize-card {
+            min-width: 180px;
+            height: 160px;
+            margin: 0 15px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            border: 2px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .prize-card img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .prize-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Spin Button */
+        .controls { margin-top: 50px; }
+
+        #spin-btn {
+            padding: 20px 80px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #111;
+            background: linear-gradient(180deg, #f9e29c 0%, var(--primary-gold) 100%);
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #92751f, 0 15px 25px rgba(0,0,0,0.5);
+            transition: all 0.1s;
+        }
+
+        #spin-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #92751f, 0 10px 15px rgba(0,0,0,0.5);
+        }
+
+        #spin-btn:disabled {
+            background: #444;
+            color: #777;
+            box-shadow: none;
+            transform: translateY(5px);
+        }
+
+        /* Result Modal */
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        #modal {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            color: #111;
+            width: 300px;
+            border: 5px solid var(--primary-gold);
+        }
+
+        .promo-code {
+            font-size: 28px;
+            color: var(--accent-red);
+            background: #f0f0f0;
+            padding: 15px;
+            border: 2px dashed #ccc;
+            margin: 20px 0;
+            display: block;
+        }
+
+        .close-btn {
+            background: var(--vip-black);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>VIP EXCLUSIVE</h1>
+        <p style="color: var(--primary-gold); letter-spacing: 2px;">SPIN THE REEL TO REVEAL YOUR PRIZE</p>
+    </div>
+
+    <div class="carousel-container">
+        <div class="pointer"></div>
+        <div class="prize-track" id="track"></div>
+    </div>
+
+    <div class="controls">
+        <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal">
+            <h2 style="margin-top: 0;">JACKPOT!</h2>
+            <p>You've unlocked:</p>
+            <h3 id="prize-display" style="color: var(--primary-gold);"></h3>
+            <span class="promo-code" id="promo-code">------</span>
+            <button class="close-btn" onclick="closeModal()">CLAIM PRIZE</button>
+        </div>
+    </div>
+
+    <audio id="tick-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="win-sound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+    <script>
+        const prizes = [
+            { name: "Blue Sneakers", img: "https://cdn-icons-png.flaticon.com/512/2742/2742689.png", code: "VIP-SNKR" },
+            { name: "VIP Smartphone", img: "https://cdn-icons-png.flaticon.com/512/0/191.png", code: "VIP-PHON" },
+            { name: "Luxury Watch", img: "https://cdn-icons-png.flaticon.com/512/2237/2237676.png", code: "VIP-TIME" },
+            { name: "Music Beats", img: "https://cdn-icons-png.flaticon.com/512/1250/1250680.png", code: "VIP-BEAT" },
+            { name: "Cash Voucher", img: "https://cdn-icons-png.flaticon.com/512/2331/2331941.png", code: "VIP-CASH" }
+        ];
+
+        const track = document.getElementById('track');
+        const cardWidth = 210; // 180px width + 30px total margin
+
+        function init() {
+            // Fill track with 60 items for a long spin
+            for(let i = 0; i < 60; i++) {
+                const prize = prizes[i % prizes.length];
+                const card = document.createElement('div');
+                card.className = 'prize-card';
+                card.innerHTML = `
+                    <img src="${prize.img}">
+                    <p>${prize.name}</p>
+                `;
+                track.appendChild(card);
+            }
+        }
+
+        function spinWheel() {
+            const btn = document.getElementById('spin-btn');
+            const tick = document.getElementById('tick-sound');
+            btn.disabled = true;
+
+            // Pick a winner (Target index between 45 and 55)
+            const targetIndex = Math.floor(Math.random() * 10) + 45;
+            const winner = prizes[targetIndex % prizes.length];
+
+            const containerWidth = document.querySelector('.carousel-container').offsetWidth;
+            const finalOffset = (targetIndex * cardWidth) - (containerWidth / 2) + (cardWidth / 2);
+
+            track.style.transform = `translateX(-${finalOffset}px)`;
+
+            // Fake "ticking" sound effect
+            let ticks = 0;
+            const tickInterval = setInterval(() => {
+                tick.currentTime = 0;
+                tick.play().catch(()=>{});
+                ticks++;
+                if(ticks > 20) clearInterval(tickInterval);
+            }, 150);
+
+            setTimeout(() => {
+                clearInterval(tickInterval);
+                triggerWin(winner);
+                btn.disabled = false;
+            }, 4100);
+        }
+
+        function triggerWin(prize) {
+            // Play win sound
+            document.getElementById('win-sound').play().catch(()=>{});
+
+            // Fire Confetti!
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#d4af37', '#ffffff', '#ff0000']
+            });
+
+            // Show Modal
+            document.getElementById('prize-display').innerText = prize.name;
+            document.getElementById('promo-code').innerText = prize.code;
+            document.getElementById('modal-overlay').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            // Smoothly reset
+            track.style.transition = 'none';
+            track.style.transform = 'translateX(0)';
+            setTimeout(() => {
+                track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+            }, 50);
+        }
+
+        init();
+    </script>
+</body>
+</html>
