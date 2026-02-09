@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP GOLDEN VAULT</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-bright: #fff380;
+            --vip-red: #800000;
+            --bg-black: #050505;
+        }
+
+        body {
+            background-color: var(--bg-black);
+            background-image: linear-gradient(0deg, #000 0%, #1a0000 100%);
+            color: white;
+            font-family: 'Garamond', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Top Banner */
+        .vip-header {
+            text-align: center;
+            border: 2px solid var(--gold);
+            padding: 10px 40px;
+            background: rgba(0,0,0,0.6);
+            box-shadow: 0 0 20px var(--gold);
+            margin-bottom: 50px;
+        }
+
+        .vip-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 5px;
+            background: linear-gradient(to bottom, var(--gold-bright), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* The Vault */
+        .vault-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #333, #111);
+            border: 10px solid #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 50px #000, 0 0 30px rgba(212, 175, 55, 0.2);
+        }
+
+        .vault-wheel {
+            width: 180px;
+            height: 180px;
+            border: 8px dashed var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .vault-handle {
+            width: 40px;
+            height: 120px;
+            background: var(--gold);
+            position: absolute;
+            border-radius: 10px;
+        }
+
+        /* Key Selection */
+        .key-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .key-item {
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .key-item:hover { transform: translateY(-10px); }
+
+        .key-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 5px var(--gold));
+        }
+
+        /* Result Modal - High End */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .congrats-card {
+            background: var(--vip-red);
+            border: 5px double var(--gold);
+            padding: 50px;
+            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 0 100px var(--vip-red);
+            max-width: 350px;
+        }
+
+        .congrats-card h2 {
+            font-size: 2rem;
+            color: var(--gold-bright);
+            margin: 0;
+        }
+
+        .spin-count {
+            font-size: 4rem;
+            display: block;
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 0 0 20px #000;
+        }
+
+        .claim-btn {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="vip-header">
+        <h1>VIP VAULT</h1>
+        <p style="color: #ccc; margin: 0;">POTENTIAL: 500X REWARD</p>
+    </div>
+
+    <div class="vault-container">
+        <div class="vault-wheel" id="wheel">
+            <div class="vault-handle" style="transform: rotate(0deg);"></div>
+            <div class="vault-handle" style="transform: rotate(90deg);"></div>
+            <div class="vault-handle" style="transform: rotate(180deg);"></div>
+            <div class="vault-handle" style="transform: rotate(270deg);"></div>
+        </div>
+        <div style="position:absolute; font-size: 2rem;">🔒</div>
+    </div>
+
+    <div class="key-container">
+        <div class="key-item" onclick="unlock(this)">
+            <div class="key-icon">🔑</div>
+            <p>KEY 1</p>
+        </div>
+        <div class="key-item" onclick="unlock(this)">
+            <div class="key-icon">🔑</div>
+            <p>KEY 2</p>
+        </div>
+        <div class="key-item" onclick="unlock(this)">
+            <div class="key-icon">🔑</div>
+            <p>KEY 3</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="overlay">
+        <div class="congrats-card">
+            <h2>ACCESS GRANTED</h2>
+            <span class="spin-count" id="prize-text">x10</span>
+            <p style="letter-spacing: 2px;">FREE SPINS UNLOCKED</p>
+            <button class="claim-btn" onclick="location.reload()">COLLECT NOW</button>
+        </div>
+    </div>
+
+    <audio id="snd-unlock" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="snd-fanfare" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+    <script>
+        const prizes = ["x3", "x5", "x10", "THANK YOU"];
+
+        function unlock(el) {
+            // Disable other keys
+            document.querySelectorAll('.key-item').forEach(k => k.style.pointerEvents = 'none');
+            el.style.filter = "brightness(2) drop-shadow(0 0 20px gold)";
+
+            const wheel = document.getElementById('wheel');
+            const snd = document.getElementById('snd-unlock');
+            
+            // Animation: Rotate the vault wheel
+            wheel.style.transform = "rotate(720deg)";
+            snd.play().catch(()=>{});
+
+            setTimeout(() => {
+                showResult();
+            }, 2100);
+        }
+
+        function showResult() {
+            const result = prizes[Math.floor(Math.random() * prizes.length)];
+            const text = document.getElementById('prize-text');
+            const overlay = document.getElementById('overlay');
+            
+            text.innerText = result;
+            overlay.style.display = 'flex';
+            
+            if(result !== "THANK YOU") {
+                document.getElementById('snd-fanfare').play().catch(()=>{});
+                confetti({
+                    particleCount: 200,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    colors: ['#d4af37', '#ffffff']
+                });
+            } else {
+                text.style.fontSize = "2rem";
+                text.style.color = "#444";
+            }
+        }
+    </script>
+</body>
+</html>
