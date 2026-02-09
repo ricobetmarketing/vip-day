@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP MYSTERY BOX</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --pink-glow: #ff00ff;
+            --gold: #fcc200;
+            --deep-purple: #1a0033;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #2e004f 0%, #000 100%);
+            color: white;
+            font-family: 'Arial Black', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Title - Stylized like the image */
+        .title-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .vip-badge {
+            background: linear-gradient(to bottom, #fcc200, #8a6d3b);
+            color: black;
+            padding: 2px 20px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            display: inline-block;
+            border: 2px solid #fff;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            margin: 5px 0;
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, #fff 20%, #ff00ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--pink-glow));
+        }
+
+        .sub-title {
+            color: var(--gold);
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        /* Mystery Boxes Section */
+        .boxes-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 50px;
+            width: 95%;
+            max-width: 600px;
+        }
+
+        .box-item {
+            position: relative;
+            flex: 1;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .box-item:hover { transform: scale(1.1); }
+
+        /* The Box Graphic (CSS-based) */
+        .box-visual {
+            width: 100%;
+            padding-bottom: 100%; /* Square */
+            background: linear-gradient(135deg, #4b0082, #000);
+            border: 3px solid var(--pink-glow);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .box-visual::before {
+            content: '🔒';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+        }
+
+        .box-item.selected .box-visual {
+            animation: pulse-pink 0.5s infinite alternate;
+            border-color: #fff;
+        }
+
+        @keyframes pulse-pink {
+            from { box-shadow: 0 0 20px var(--pink-glow); }
+            to { box-shadow: 0 0 50px var(--pink-glow), 0 0 20px #fff; }
+        }
+
+        /* Open Button */
+        #open-btn {
+            margin-top: 40px;
+            background: linear-gradient(to bottom, #ff00ff, #800080);
+            border: 2px solid #fff;
+            color: white;
+            padding: 15px 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 0, 255, 0.5);
+            text-transform: uppercase;
+        }
+
+        #open-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Result Panel (Popup) */
+        #result-panel {
+            display: none;
+            position: fixed;
+            bottom: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            background: linear-gradient(to bottom, #300050, #000);
+            border: 4px solid var(--gold);
+            border-radius: 30px 30px 0 0;
+            padding: 30px;
+            text-align: center;
+            z-index: 100;
+            transition: bottom 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+        }
+
+        .result-title {
+            color: #fff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .win-amount {
+            font-size: 3rem;
+            background: linear-gradient(to bottom, #fff, var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+
+        .continue-btn {
+            background: linear-gradient(to bottom, #fcc200, #ff8c00);
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 90;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title-container">
+        <div class="vip-badge">VIP</div>
+        <h1 class="main-title">Mystery Box</h1>
+        <div class="sub-title">CHOOSE A MYSTERY BOX!</div>
+        <p style="font-size: 0.8rem; color: #bbb;">Great odds to reveal more free spins!</p>
+    </div>
+
+    <div class="boxes-container">
+        <div class="box-item" onclick="selectBox(this)">
+            <div class="box-visual"></div>
+        </div>
+        <div class="box-item" onclick="selectBox(this)">
+            <div class="box-visual"></div>
+        </div>
+        <div class="box-item" onclick="selectBox(this)">
+            <div class="box-visual"></div>
+        </div>
+    </div>
+
+    <button id="open-btn" onclick="openBox()">Open Box</button>
+    <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">1 choice only • Each box has free spin prizes</p>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div id="result-panel">
+        <div class="result-title">Congratulations!</div>
+        <div style="color: #fff; font-size: 1.2rem;">YOU WON</div>
+        <div class="win-amount" id="win-text">x5</div>
+        <div style="color: #fff; letter-spacing: 2px;">FREE SPINS!</div>
+        <button class="continue-btn" onclick="location.reload()">CONTINUE</button>
+    </div>
+
+    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="snd-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+    <script>
+        let selectedElement = null;
+        const prizes = ["x3", "x5", "x10"]; // Your rigged logic: only small wins
+
+        function selectBox(el) {
+            // Deselect others
+            document.querySelectorAll('.box-item').forEach(b => b.classList.remove('selected'));
+            // Select this one
+            el.classList.add('selected');
+            selectedElement = el;
+            document.getElementById('snd-click').play().catch(()=>{});
+        }
+
+        function openBox() {
+            if(!selectedElement) {
+                alert("Please choose a box first!");
+                return;
+            }
+
+            const btn = document.getElementById('open-btn');
+            btn.disabled = true;
+
+            // Trigger win
+            setTimeout(() => {
+                const result = prizes[Math.floor(Math.random() * prizes.length)];
+                document.getElementById('win-text').innerText = result;
+                
+                // Show overlay and panel
+                document.getElementById('overlay').style.display = 'block';
+                const panel = document.getElementById('result-panel');
+                panel.style.display = 'block';
+                setTimeout(() => panel.style.bottom = '0', 50);
+
+                // Effects
+                document.getElementById('snd-win').play().catch(()=>{});
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.8 },
+                    colors: ['#ff00ff', '#fcc200', '#ffffff']
+                });
+            }, 500);
+        }
+    </script>
+</body>
+</html>
