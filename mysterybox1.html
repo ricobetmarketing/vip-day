@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>VIP Mystery Box</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@600;800;1000&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#121125;
+      --accent:#ff75e2;
+      --text:#f6f6ff;
+      --muted: rgba(246,246,255,.72);
+      --stroke: rgba(255,255,255,.12);
+      --panel: rgba(255,255,255,.06);
+      --shadow: 0 26px 70px rgba(0,0,0,.55);
+      --soft: 0 14px 32px rgba(0,0,0,.40);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(950px 520px at 50% -10%, rgba(255,117,226,.22), transparent 60%),
+        radial-gradient(700px 420px at 15% 40%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(700px 420px at 85% 55%, rgba(255,117,226,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px 14px;
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      width:min(980px, 100%);
+      border-radius: 34px;
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .wrap:before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height: 180px;
+      background:
+        radial-gradient(900px 200px at 50% 0%, rgba(255,255,255,.10), transparent 62%),
+        radial-gradient(760px 220px at 65% 25%, rgba(255,117,226,.14), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    header{
+      position:relative;
+      text-align:center;
+      padding: 26px 18px 10px;
+    }
+
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(246,246,255,.78);
+      font-weight: 900;
+      letter-spacing: .18em;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(255,117,226,.16);
+    }
+
+    h1{
+      margin: 14px 0 6px;
+      font-family: Orbitron, Inter, system-ui;
+      font-size: clamp(34px, 4.4vw, 52px);
+      line-height:1.05;
+      letter-spacing:.02em;
+      background: linear-gradient(180deg, #fff, var(--accent));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      text-shadow: 0 14px 28px rgba(0,0,0,.45);
+    }
+
+    .content{
+      position:relative;
+      padding: 16px 18px 26px;
+      display:grid;
+      gap: 16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .boxWrap{
+      border-radius: 28px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--soft);
+      padding: 16px 14px 18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
+      text-align:center;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .15s ease, filter .15s ease, border-color .15s ease;
+      position:relative;
+      overflow:hidden;
+      min-height: 270px;
+    }
+
+    .boxWrap:hover{ transform: translateY(-2px); filter: brightness(1.03); }
+    .boxWrap.selected{
+      border-color: rgba(255,117,226,.75);
+      box-shadow: 0 0 0 10px rgba(255,117,226,.10), var(--soft);
+      transform: translateY(-3px);
+    }
+    .boxWrap.disabled{
+      cursor:not-allowed;
+      opacity:.6;
+      filter:saturate(.75);
+      transform:none;
+    }
+
+    .boxWrap:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(260px 180px at 20% 25%, rgba(255,117,226,.20), transparent 60%),
+        radial-gradient(240px 180px at 80% 70%, rgba(255,255,255,.06), transparent 60%);
+      opacity:.95;
+      pointer-events:none;
+    }
+
+    /* --- Your box image (replace URLs) --- */
+    .boxImage{
+      width: 210px;
+      height: 160px;
+      border-radius: 22px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 18px 30px rgba(0,0,0,.35);
+      position:relative;
+      z-index:1;
+      background: rgba(255,255,255,.06);
+    }
+
+    /* neon underglow (kept) */
+    .underGlow{
+      width: 180px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 50% 50%, rgba(255,117,226,.50), transparent 70%);
+      filter: blur(1px);
+      opacity:.65;
+      z-index:0;
+      margin-top: -10px;
+    }
+
+    .label{
+      position:relative;
+      z-index:1;
+      font-family: Orbitron, Inter, system-ui;
+      font-size: 12px;
+      letter-spacing:.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.88);
+      margin-top: 2px;
+    }
+
+    .tap{
+      position:relative;
+      z-index:1;
+      color: rgba(246,246,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing:.10em;
+      text-transform: uppercase;
+    }
+
+    .actions{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    button{
+      border:0;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.10em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 16px 58px;
+      font-size: 18px;
+      color:#101018;
+      background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, var(--accent) 140%);
+      box-shadow: 0 10px 0 rgba(170,70,150,.95), 0 20px 30px rgba(0,0,0,.45);
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    }
+    button:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+    button:active{
+      transform: translateY(6px);
+      box-shadow: 0 4px 0 rgba(170,70,150,.95), 0 12px 18px rgba(0,0,0,.42);
+    }
+    button:disabled{
+      cursor:not-allowed;
+      background: #3a3a3a;
+      color:#9a9a9a;
+      transform: translateY(6px);
+      box-shadow: none;
+    }
+
+    /* modal */
+    #overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(7px);
+      z-index: 100;
+    }
+
+    .modal{
+      position:absolute;
+      top:50%; left:50%;
+      transform: translate(-50%, -50%);
+      width:min(460px, calc(100% - 26px));
+      border-radius: 28px;
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+      color:#111;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .modalTop{
+      padding: 18px 18px 14px;
+      text-align:center;
+      background: linear-gradient(180deg, rgba(255,117,226,.22), transparent);
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .modalTop h2{
+      margin:0;
+      font-family: Orbitron, Inter, system-ui;
+      letter-spacing:.12em;
+      text-transform: uppercase;
+      font-size: 18px;
+    }
+
+    .modalBody{
+      padding: 18px;
+      display:grid;
+      gap: 12px;
+      text-align:center;
+    }
+
+    .bigPrize{
+      font-weight: 1000;
+      font-size: 22px;
+      color: rgba(130,30,110,.98);
+      margin-top: 2px;
+    }
+
+    .codeBox{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 12px;
+      border-radius: 18px;
+      border: 2px dashed rgba(0,0,0,.22);
+      background: rgba(255,117,226,.18);
+    }
+    .code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight: 1000;
+      letter-spacing: .16em;
+      font-size: 16px;
+      user-select: all;
+    }
+    .copyBtn{
+      border:1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.35);
+      color:#111;
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+
+    .modalActions{
+      display:flex;
+      justify-content:center;
+      gap: 10px;
+      flex-wrap:wrap;
+      padding-top: 2px;
+    }
+    .closeBtn{
+      border:none;
+      background:#111;
+      color:#fff;
+      padding: 12px 18px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.16);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing:.06em;
+      display:none;
+      z-index: 120;
+      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+    }
+    .toast.show{ display:block; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <span class="kicker"><span class="dot"></span> VIP</span>
+      <h1>MYSTERY BOX</h1>
+    </header>
+
+    <div class="content">
+      <div class="grid" id="grid">
+
+        <!-- ✅ Replace the src with your own image URL -->
+        <div class="boxWrap" data-box="1" onclick="selectBox(1)">
+          <img class="boxImage" src="https://ricomx.ft-crm.com/media-api/serve/df6b594c-e8bd-402d-b186-efca9501a635_2.png" alt="Box A">
+          <div class="underGlow" aria-hidden="true"></div>
+          <div class="label">Box A</div>
+          <div class="tap">Tap to select</div>
+        </div>
+
+        <!-- ✅ Replace the src with your own image URL -->
+        <div class="boxWrap" data-box="2" onclick="selectBox(2)">
+          <img class="boxImage" src="https://ricomx.ft-crm.com/media-api/serve/df6b594c-e8bd-402d-b186-efca9501a635_2.png" alt="Box B">
+          <div class="underGlow" aria-hidden="true"></div>
+          <div class="label">Box B</div>
+          <div class="tap">Tap to select</div>
+        </div>
+
+        <!-- ✅ Replace the src with your own image URL -->
+        <div class="boxWrap" data-box="3" onclick="selectBox(3)">
+          <img class="boxImage" src="https://ricomx.ft-crm.com/media-api/serve/df6b594c-e8bd-402d-b186-efca9501a635_2.png" alt="Box C">
+          <div class="underGlow" aria-hidden="true"></div>
+          <div class="label">Box C</div>
+          <div class="tap">Tap to select</div>
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button id="openBtn" onclick="openSelected()" disabled>OPEN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Modal -->
+  <div id="overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalTop">
+        <h2 id="modalTitle">RESULT</h2>
+      </div>
+
+      <div class="modalBody">
+        <div class="bigPrize" id="prizeText">—</div>
+
+        <div class="codeBox" id="codeBox">
+          <div style="text-align:left;">
+            <div style="font-size:12px; font-weight:1000; letter-spacing:.10em; text-transform:uppercase; color:rgba(0,0,0,.65);">
+              CODE
+            </div>
+            <div class="code" id="codeText">—</div>
+          </div>
+          <button class="copyBtn" onclick="copyCode()">COPY</button>
+        </div>
+
+        <div class="modalActions">
+          <button class="closeBtn" onclick="closeModal()">DONE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied ✅</div>
+
+  <!-- Sound Effects -->
+  <audio id="pickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+  <audio id="openSound" src="https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3" preload="auto"></audio>
+  <audio id="winSound"  src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
+  <audio id="loseSound" src="https://assets.mixkit.co/active_storage/sfx/2195/2195-preview.mp3" preload="auto"></audio>
+
+  <script>
+    const OUTCOMES = [
+      { label: "×3 FREE SPINS",  weight: 46, kind: "win" },
+      { label: "×5 FREE SPINS",  weight: 30, kind: "win" },
+      { label: "×10 FREE SPINS", weight: 18, kind: "win" },
+      { label: "THANK YOU",      weight: 6,  kind: "lose" }
+    ];
+
+    let selected = null;
+    let opened = false;
+
+    const openBtn = document.getElementById("openBtn");
+    const grid = document.getElementById("grid");
+    const overlay = document.getElementById("overlay");
+
+    const pickSound = document.getElementById("pickSound");
+    const openSound = document.getElementById("openSound");
+    const winSound  = document.getElementById("winSound");
+    const loseSound = document.getElementById("loseSound");
+
+    function play(aud){
+      aud.currentTime = 0;
+      aud.play().catch(()=>{});
+    }
+
+    function selectBox(n){
+      if (opened) return;
+
+      selected = n;
+      play(pickSound);
+
+      [...grid.querySelectorAll(".boxWrap")].forEach(el=>{
+        el.classList.remove("selected");
+      });
+
+      const box = grid.querySelector(`.boxWrap[data-box="${n}"]`);
+      box.classList.add("selected");
+      openBtn.disabled = false;
+    }
+
+    function weightedPick(items){
+      const total = items.reduce((s,i)=>s+(i.weight||1),0);
+      let r = Math.random()*total;
+      for (const it of items){
+        r -= (it.weight||1);
+        if (r <= 0) return it;
+      }
+      return items[items.length-1];
+    }
+
+    function makeCode(prefix){
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const seg = (n)=>Array.from({length:n}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+      return `${prefix}-${seg(4)}-${seg(4)}`;
+    }
+
+    function openSelected(){
+      if (!selected || opened) return;
+
+      opened = true;
+      openBtn.disabled = true;
+
+      const boxes = [...grid.querySelectorAll(".boxWrap")];
+      boxes.forEach(el=>{
+        const n = Number(el.getAttribute("data-box"));
+        if (n !== selected) el.classList.add("disabled");
+      });
+
+      play(openSound);
+
+      // quick visual pop
+      const chosen = grid.querySelector(`.boxWrap[data-box="${selected}"]`);
+      chosen.style.transform = "translateY(-6px) scale(1.02)";
+      setTimeout(()=>{
+        chosen.style.transform = "";
+        revealResult();
+      }, 500);
+    }
+
+    function revealResult(){
+      const outcome = weightedPick(OUTCOMES);
+
+      const prizeText = document.getElementById("prizeText");
+      const modalTitle = document.getElementById("modalTitle");
+      const codeText = document.getElementById("codeText");
+      const codeBox = document.getElementById("codeBox");
+
+      if (outcome.kind === "win"){
+        modalTitle.textContent = "CONGRATS";
+        prizeText.textContent = outcome.label;
+
+        const code = makeCode("VIPFS");
+        codeText.textContent = code;
+        codeBox.style.display = "flex";
+
+        play(winSound);
+        confetti({
+          particleCount: 170,
+          spread: 75,
+          origin: { y: 0.65 },
+          colors: ["#ff75e2", "#ffffff", "#9b5cff"]
+        });
+      } else {
+        modalTitle.textContent = "TRY AGAIN";
+        prizeText.textContent = "THANK YOU";
+
+        codeText.textContent = "—";
+        codeBox.style.display = "none";
+
+        play(loseSound);
+        confetti({
+          particleCount: 90,
+          spread: 60,
+          origin: { y: 0.65 },
+          colors: ["#ff75e2", "#ffffff"]
+        });
+      }
+
+      overlay.style.display = "block";
+    }
+
+    function closeModal(){
+      overlay.style.display = "none";
+      // one try only (leave locked)
+    }
+
+    function copyCode(){
+      const code = document.getElementById("codeText").textContent.trim();
+      if (!code || code === "—") return;
+
+      navigator.clipboard.writeText(code).then(()=>showToast("Copied ✅"))
+        .catch(()=>{
+          const ta = document.createElement("textarea");
+          ta.value = code;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          showToast("Copied ✅");
+        });
+    }
+
+    function showToast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(showToast._tm);
+      showToast._tm = setTimeout(()=>t.classList.remove("show"), 1200);
+    }
+
+    overlay.addEventListener("click", (e)=>{
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape" && overlay.style.display === "block") closeModal();
+    });
+  </script>
+</body>
+</html>
