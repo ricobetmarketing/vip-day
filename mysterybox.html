@@ -1,262 +1,771 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP MYSTERY BOX</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-        :root {
-            --pink-glow: #ff00ff;
-            --gold: #fcc200;
-            --deep-purple: #1a0033;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>VIP Mystery Box</title>
 
-        body {
-            margin: 0;
-            padding: 0;
-            background: radial-gradient(circle, #2e004f 0%, #000 100%);
-            color: white;
-            font-family: 'Arial Black', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-        /* Header Title - Stylized like the image */
-        .title-container {
-            margin-top: 30px;
-            text-align: center;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@600;800;1000&display=swap" rel="stylesheet">
 
-        .vip-badge {
-            background: linear-gradient(to bottom, #fcc200, #8a6d3b);
-            color: black;
-            padding: 2px 20px;
-            border-radius: 5px;
-            font-size: 1.2rem;
-            display: inline-block;
-            border: 2px solid #fff;
-        }
+  <style>
+    :root{
+      --bg:#121125;
+      --accent:#ff75e2;
+      --text:#f6f6ff;
+      --muted: rgba(246,246,255,.72);
+      --stroke: rgba(255,255,255,.12);
+      --panel: rgba(255,255,255,.06);
+      --shadow: 0 26px 70px rgba(0,0,0,.55);
+      --soft: 0 14px 32px rgba(0,0,0,.40);
+    }
 
-        .main-title {
-            font-size: 2.5rem;
-            margin: 5px 0;
-            text-transform: uppercase;
-            background: linear-gradient(to bottom, #fff 20%, #ff00ff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 10px var(--pink-glow));
-        }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(950px 520px at 50% -10%, rgba(255,117,226,.22), transparent 60%),
+        radial-gradient(700px 420px at 15% 40%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(700px 420px at 85% 55%, rgba(255,117,226,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px 14px;
+      overflow-x:hidden;
+    }
 
-        .sub-title {
-            color: var(--gold);
-            font-size: 1rem;
-            letter-spacing: 1px;
-        }
+    .wrap{
+      width:min(980px, 100%);
+      border-radius: 34px;
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
 
-        /* Mystery Boxes Section */
-        .boxes-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 50px;
-            width: 95%;
-            max-width: 600px;
-        }
+    .wrap:before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height: 180px;
+      background:
+        radial-gradient(900px 200px at 50% 0%, rgba(255,255,255,.10), transparent 62%),
+        radial-gradient(760px 220px at 65% 25%, rgba(255,117,226,.14), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
 
-        .box-item {
-            position: relative;
-            flex: 1;
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+    header{
+      position:relative;
+      text-align:center;
+      padding: 26px 18px 10px;
+    }
 
-        .box-item:hover { transform: scale(1.1); }
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      color: rgba(246,246,255,.78);
+      font-weight: 900;
+      letter-spacing: .18em;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(255,117,226,.16);
+    }
 
-        /* The Box Graphic (CSS-based) */
-        .box-visual {
-            width: 100%;
-            padding-bottom: 100%; /* Square */
-            background: linear-gradient(135deg, #4b0082, #000);
-            border: 3px solid var(--pink-glow);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
+    h1{
+      margin: 14px 0 6px;
+      font-family: Orbitron, Inter, system-ui;
+      font-size: clamp(34px, 4.4vw, 52px);
+      line-height:1.05;
+      letter-spacing:.02em;
+      background: linear-gradient(180deg, #fff, var(--accent));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      text-shadow: 0 14px 28px rgba(0,0,0,.45);
+    }
 
-        .box-visual::before {
-            content: '🔒';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-        }
+    .content{
+      position:relative;
+      padding: 16px 18px 26px;
+      display:grid;
+      gap: 16px;
+    }
 
-        .box-item.selected .box-visual {
-            animation: pulse-pink 0.5s infinite alternate;
-            border-color: #fff;
-        }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+    }
 
-        @keyframes pulse-pink {
-            from { box-shadow: 0 0 20px var(--pink-glow); }
-            to { box-shadow: 0 0 50px var(--pink-glow), 0 0 20px #fff; }
-        }
+    .boxWrap{
+      border-radius: 28px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--soft);
+      padding: 18px 16px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
+      text-align:center;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .15s ease, filter .15s ease, border-color .15s ease;
+      position:relative;
+      overflow:hidden;
+      min-height: 270px;
+    }
 
-        /* Open Button */
-        #open-btn {
-            margin-top: 40px;
-            background: linear-gradient(to bottom, #ff00ff, #800080);
-            border: 2px solid #fff;
-            color: white;
-            padding: 15px 60px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 0, 255, 0.5);
-            text-transform: uppercase;
-        }
+    .boxWrap:hover{ transform: translateY(-2px); filter: brightness(1.03); }
+    .boxWrap.selected{
+      border-color: rgba(255,117,226,.75);
+      box-shadow: 0 0 0 10px rgba(255,117,226,.10), var(--soft);
+      transform: translateY(-3px);
+    }
+    .boxWrap.disabled{
+      cursor:not-allowed;
+      opacity:.6;
+      filter:saturate(.75);
+      transform:none;
+    }
 
-        #open-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* ambient glow */
+    .boxWrap:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(260px 180px at 20% 25%, rgba(255,117,226,.20), transparent 60%),
+        radial-gradient(240px 180px at 80% 70%, rgba(255,255,255,.06), transparent 60%);
+      opacity:.95;
+      pointer-events:none;
+    }
 
-        /* Result Panel (Popup) */
-        #result-panel {
-            display: none;
-            position: fixed;
-            bottom: -100%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 450px;
-            background: linear-gradient(to bottom, #300050, #000);
-            border: 4px solid var(--gold);
-            border-radius: 30px 30px 0 0;
-            padding: 30px;
-            text-align: center;
-            z-index: 100;
-            transition: bottom 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-            box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
-        }
+    /* ---------- 3D CHEST (CSS ONLY) ---------- */
+    .chest{
+      width: 180px;
+      height: 130px;
+      position:relative;
+      transform: translateZ(0);
+      filter: drop-shadow(0 22px 28px rgba(0,0,0,.45));
+      z-index:1;
+    }
 
-        .result-title {
-            color: #fff;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
+    /* base */
+    .base{
+      position:absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 12px;
+      height: 70px;
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+        linear-gradient(135deg, rgba(255,117,226,.22), rgba(0,0,0,.0));
+      border:1px solid rgba(255,255,255,.14);
+      overflow:hidden;
+    }
 
-        .win-amount {
-            font-size: 3rem;
-            background: linear-gradient(to bottom, #fff, var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 10px 0;
-        }
+    /* front face highlight */
+    .base:before{
+      content:"";
+      position:absolute;
+      inset: 10px 12px 10px 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), transparent);
+      border:1px solid rgba(255,255,255,.10);
+      opacity:.85;
+    }
 
-        .continue-btn {
-            background: linear-gradient(to bottom, #fcc200, #ff8c00);
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 10px;
-            width: 100%;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+    /* side bevel */
+    .base:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius: 18px;
+      box-shadow:
+        inset 18px 0 20px rgba(0,0,0,.22),
+        inset -18px 0 20px rgba(0,0,0,.22),
+        inset 0 18px 24px rgba(255,255,255,.04);
+      pointer-events:none;
+    }
 
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 90;
-        }
-    </style>
+    /* lid */
+    .lid{
+      position:absolute;
+      left: 22px;
+      right: 22px;
+      top: 10px;
+      height: 62px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04)),
+        radial-gradient(140px 70px at 50% 0%, rgba(255,117,226,.28), transparent 60%);
+      border:1px solid rgba(255,255,255,.14);
+      transform-origin: 50% 100%;
+      transform: rotateX(0deg);
+      transition: transform .55s cubic-bezier(.2,.9,.2,1);
+      overflow:hidden;
+    }
+
+    /* lid shine */
+    .lid:before{
+      content:"";
+      position:absolute;
+      width: 160%;
+      height: 70%;
+      left:-40%;
+      top:-35%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+      transform: rotate(18deg);
+      opacity:.7;
+    }
+
+    /* lid bevel */
+    .lid:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius: 22px;
+      box-shadow:
+        inset 0 16px 26px rgba(255,255,255,.05),
+        inset 14px 0 18px rgba(0,0,0,.20),
+        inset -14px 0 18px rgba(0,0,0,.20);
+      pointer-events:none;
+    }
+
+    /* hinge strip */
+    .hinge{
+      position:absolute;
+      left: 32px;
+      right: 32px;
+      top: 62px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.12);
+      opacity:.9;
+      z-index:2;
+    }
+
+    /* lock */
+    .lock{
+      position:absolute;
+      left:50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(0,0,0,.12));
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      display:grid;
+      place-items:center;
+      z-index:3;
+    }
+
+    .lock:before{
+      content:"";
+      width: 28px;
+      height: 18px;
+      border-radius: 12px 12px 10px 10px;
+      border: 3px solid rgba(255,255,255,.72);
+      border-bottom: 0;
+      transform: translateY(-2px);
+      opacity:.75;
+      display:block;
+    }
+
+    .lock:after{
+      content:"";
+      width: 10px;
+      height: 14px;
+      border-radius: 6px;
+      background: rgba(255,117,226,.95);
+      box-shadow: 0 0 0 6px rgba(255,117,226,.18);
+      display:block;
+      margin-top: 8px;
+    }
+
+    /* glow under chest */
+    .underGlow{
+      width: 170px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 50% 50%, rgba(255,117,226,.50), transparent 70%);
+      filter: blur(1px);
+      opacity:.65;
+      z-index:0;
+      margin-top: -6px;
+    }
+
+    /* open animation: lid flips back */
+    .boxWrap.opening .lid{
+      transform: rotateX(62deg);
+    }
+    .boxWrap.opening .lock{
+      transform: translateX(-50%) translateY(4px);
+      opacity:.92;
+    }
+
+    .label{
+      position:relative;
+      z-index:1;
+      font-family: Orbitron, Inter, system-ui;
+      font-size: 12px;
+      letter-spacing:.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.88);
+      margin-top: 2px;
+    }
+
+    .tap{
+      position:relative;
+      z-index:1;
+      color: rgba(246,246,255,.78);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing:.10em;
+      text-transform: uppercase;
+    }
+
+    .actions{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    button{
+      border:0;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.10em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 16px 58px;
+      font-size: 18px;
+      color:#101018;
+      background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, var(--accent) 140%);
+      box-shadow: 0 10px 0 rgba(170,70,150,.95), 0 20px 30px rgba(0,0,0,.45);
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    }
+    button:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+    button:active{
+      transform: translateY(6px);
+      box-shadow: 0 4px 0 rgba(170,70,150,.95), 0 12px 18px rgba(0,0,0,.42);
+    }
+    button:disabled{
+      cursor:not-allowed;
+      background: #3a3a3a;
+      color:#9a9a9a;
+      transform: translateY(6px);
+      box-shadow: none;
+    }
+
+    /* modal */
+    #overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(7px);
+      z-index: 100;
+    }
+
+    .modal{
+      position:absolute;
+      top:50%; left:50%;
+      transform: translate(-50%, -50%);
+      width:min(460px, calc(100% - 26px));
+      border-radius: 28px;
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+      color:#111;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .modalTop{
+      padding: 18px 18px 14px;
+      text-align:center;
+      background: linear-gradient(180deg, rgba(255,117,226,.22), transparent);
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .modalTop h2{
+      margin:0;
+      font-family: Orbitron, Inter, system-ui;
+      letter-spacing:.12em;
+      text-transform: uppercase;
+      font-size: 18px;
+    }
+
+    .modalBody{
+      padding: 18px;
+      display:grid;
+      gap: 12px;
+      text-align:center;
+    }
+
+    .bigPrize{
+      font-weight: 1000;
+      font-size: 22px;
+      color: rgba(130,30,110,.98);
+      margin-top: 2px;
+    }
+
+    .codeBox{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 12px 12px;
+      border-radius: 18px;
+      border: 2px dashed rgba(0,0,0,.22);
+      background: rgba(255,117,226,.18);
+    }
+    .code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-weight: 1000;
+      letter-spacing: .16em;
+      font-size: 16px;
+      user-select: all;
+    }
+    .copyBtn{
+      border:1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.35);
+      color:#111;
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+
+    .modalActions{
+      display:flex;
+      justify-content:center;
+      gap: 10px;
+      flex-wrap:wrap;
+      padding-top: 2px;
+    }
+    .closeBtn{
+      border:none;
+      background:#111;
+      color:#fff;
+      padding: 12px 18px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 1000;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+    }
+
+    /* toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.16);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing:.06em;
+      display:none;
+      z-index: 120;
+      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+    }
+    .toast.show{ display:block; }
+
+    @media (prefers-reduced-motion: reduce){
+      .boxWrap, .boxWrap:hover{ transition:none; transform:none; }
+      .boxWrap.opening .lid{ transform:none; }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="wrap">
+    <header>
+      <span class="kicker"><span class="dot"></span> VIP</span>
+      <h1>MYSTERY BOX</h1>
+    </header>
 
-    <div class="title-container">
-        <div class="vip-badge">VIP</div>
-        <h1 class="main-title">Mystery Box</h1>
-        <div class="sub-title">CHOOSE A MYSTERY BOX!</div>
-        <p style="font-size: 0.8rem; color: #bbb;">Great odds to reveal more free spins!</p>
-    </div>
-
-    <div class="boxes-container">
-        <div class="box-item" onclick="selectBox(this)">
-            <div class="box-visual"></div>
+    <div class="content">
+      <div class="grid" id="grid">
+        <div class="boxWrap" data-box="1" onclick="selectBox(1)">
+          <div class="chest" aria-hidden="true">
+            <div class="lid"></div>
+            <div class="hinge"></div>
+            <div class="base"></div>
+            <div class="lock"></div>
+          </div>
+          <div class="underGlow" aria-hidden="true"></div>
+          <div class="label">Box A</div>
+          <div class="tap">Tap to select</div>
         </div>
-        <div class="box-item" onclick="selectBox(this)">
-            <div class="box-visual"></div>
+
+        <div class="boxWrap" data-box="2" onclick="selectBox(2)">
+          <div class="chest" aria-hidden="true">
+            <div class="lid"></div>
+            <div class="hinge"></div>
+            <div class="base"></div>
+            <div class="lock"></div>
+          </div>
+          <div class="underGlow" aria-hidden="true"></div>
+          <div class="label">Box B</div>
+          <div class="tap">Tap to select</div>
         </div>
-        <div class="box-item" onclick="selectBox(this)">
-            <div class="box-visual"></div>
+
+        <div class="boxWrap" data-box="3" onclick="selectBox(3)">
+          <div class="chest" aria-hidden="true">
+            <div class="lid"></div>
+            <div class="hinge"></div>
+            <div class="base"></div>
+            <div class="lock"></div>
+          </div>
+          <div class="underGlow" aria-hidden="true"></div>
+          <div class="label">Box C</div>
+          <div class="tap">Tap to select</div>
         </div>
+      </div>
+
+      <div class="actions">
+        <button id="openBtn" onclick="openSelected()" disabled>OPEN</button>
+      </div>
     </div>
+  </div>
 
-    <button id="open-btn" onclick="openBox()">Open Box</button>
-    <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">1 choice only • Each box has free spin prizes</p>
+  <!-- Result Modal -->
+  <div id="overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalTop">
+        <h2 id="modalTitle">RESULT</h2>
+      </div>
 
-    <div class="overlay" id="overlay"></div>
+      <div class="modalBody">
+        <div class="bigPrize" id="prizeText">—</div>
 
-    <div id="result-panel">
-        <div class="result-title">Congratulations!</div>
-        <div style="color: #fff; font-size: 1.2rem;">YOU WON</div>
-        <div class="win-amount" id="win-text">x5</div>
-        <div style="color: #fff; letter-spacing: 2px;">FREE SPINS!</div>
-        <button class="continue-btn" onclick="location.reload()">CONTINUE</button>
+        <div class="codeBox" id="codeBox">
+          <div style="text-align:left;">
+            <div style="font-size:12px; font-weight:1000; letter-spacing:.10em; text-transform:uppercase; color:rgba(0,0,0,.65);">
+              CODE
+            </div>
+            <div class="code" id="codeText">—</div>
+          </div>
+          <button class="copyBtn" onclick="copyCode()">COPY</button>
+        </div>
+
+        <div class="modalActions">
+          <button class="closeBtn" onclick="closeModal()">DONE</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
-    <audio id="snd-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+  <div class="toast" id="toast">Copied ✅</div>
 
-    <script>
-        let selectedElement = null;
-        const prizes = ["x3", "x5", "x10"]; // Your rigged logic: only small wins
+  <!-- Sound Effects -->
+  <audio id="pickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+  <audio id="openSound" src="https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3" preload="auto"></audio>
+  <audio id="winSound"  src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
+  <audio id="loseSound" src="https://assets.mixkit.co/active_storage/sfx/2195/2195-preview.mp3" preload="auto"></audio>
 
-        function selectBox(el) {
-            // Deselect others
-            document.querySelectorAll('.box-item').forEach(b => b.classList.remove('selected'));
-            // Select this one
-            el.classList.add('selected');
-            selectedElement = el;
-            document.getElementById('snd-click').play().catch(()=>{});
-        }
+  <script>
+    // Actual outcomes only (no fake x500 payout here)
+    const OUTCOMES = [
+      { label: "×3 FREE SPINS",  spins: 3,  weight: 46, kind: "win" },
+      { label: "×5 FREE SPINS",  spins: 5,  weight: 30, kind: "win" },
+      { label: "×10 FREE SPINS", spins: 10, weight: 18, kind: "win" },
+      { label: "THANK YOU",      spins: 0,  weight: 6,  kind: "lose" }
+    ];
 
-        function openBox() {
-            if(!selectedElement) {
-                alert("Please choose a box first!");
-                return;
-            }
+    let selected = null;
+    let opened = false;
 
-            const btn = document.getElementById('open-btn');
-            btn.disabled = true;
+    const openBtn = document.getElementById("openBtn");
+    const grid = document.getElementById("grid");
+    const overlay = document.getElementById("overlay");
 
-            // Trigger win
-            setTimeout(() => {
-                const result = prizes[Math.floor(Math.random() * prizes.length)];
-                document.getElementById('win-text').innerText = result;
-                
-                // Show overlay and panel
-                document.getElementById('overlay').style.display = 'block';
-                const panel = document.getElementById('result-panel');
-                panel.style.display = 'block';
-                setTimeout(() => panel.style.bottom = '0', 50);
+    const pickSound = document.getElementById("pickSound");
+    const openSound = document.getElementById("openSound");
+    const winSound  = document.getElementById("winSound");
+    const loseSound = document.getElementById("loseSound");
 
-                // Effects
-                document.getElementById('snd-win').play().catch(()=>{});
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.8 },
-                    colors: ['#ff00ff', '#fcc200', '#ffffff']
-                });
-            }, 500);
-        }
-    </script>
+    function play(aud){
+      aud.currentTime = 0;
+      aud.play().catch(()=>{});
+    }
+
+    function selectBox(n){
+      if (opened) return;
+
+      selected = n;
+      play(pickSound);
+
+      [...grid.querySelectorAll(".boxWrap")].forEach(el=>{
+        el.classList.remove("selected");
+      });
+
+      const box = grid.querySelector(`.boxWrap[data-box="${n}"]`);
+      box.classList.add("selected");
+      openBtn.disabled = false;
+    }
+
+    function weightedPick(items){
+      const total = items.reduce((s,i)=>s+(i.weight||1),0);
+      let r = Math.random()*total;
+      for (const it of items){
+        r -= (it.weight||1);
+        if (r <= 0) return it;
+      }
+      return items[items.length-1];
+    }
+
+    function makeCode(prefix){
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const seg = (n)=>Array.from({length:n}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+      return `${prefix}-${seg(4)}-${seg(4)}`;
+    }
+
+    function openSelected(){
+      if (!selected || opened) return;
+
+      opened = true;
+      openBtn.disabled = true;
+
+      const boxes = [...grid.querySelectorAll(".boxWrap")];
+      boxes.forEach(el=>{
+        const n = Number(el.getAttribute("data-box"));
+        if (n !== selected) el.classList.add("disabled");
+      });
+
+      const box = grid.querySelector(`.boxWrap[data-box="${selected}"]`);
+      box.classList.add("opening");
+      play(openSound);
+
+      setTimeout(()=>{
+        revealResult();
+      }, 650);
+    }
+
+    function revealResult(){
+      const outcome = weightedPick(OUTCOMES);
+
+      const prizeText = document.getElementById("prizeText");
+      const modalTitle = document.getElementById("modalTitle");
+      const codeText = document.getElementById("codeText");
+      const codeBox = document.getElementById("codeBox");
+
+      if (outcome.kind === "win"){
+        modalTitle.textContent = "CONGRATS";
+        prizeText.textContent = outcome.label;
+
+        const code = makeCode("VIPFS");
+        codeText.textContent = code;
+        codeBox.style.display = "flex";
+
+        play(winSound);
+        confetti({
+          particleCount: 170,
+          spread: 75,
+          origin: { y: 0.65 },
+          colors: ["#ff75e2", "#ffffff", "#9b5cff"]
+        });
+      } else {
+        modalTitle.textContent = "TRY AGAIN";
+        prizeText.textContent = "THANK YOU";
+
+        codeText.textContent = "—";
+        codeBox.style.display = "none";
+
+        play(loseSound);
+        confetti({
+          particleCount: 90,
+          spread: 60,
+          origin: { y: 0.65 },
+          colors: ["#ff75e2", "#ffffff"]
+        });
+      }
+
+      overlay.style.display = "block";
+    }
+
+    function closeModal(){
+      overlay.style.display = "none";
+      // ONE TRY ONLY by default.
+      // If you want replay, uncomment:
+      // resetGame();
+    }
+
+    function resetGame(){
+      opened = false;
+      selected = null;
+      openBtn.disabled = true;
+
+      [...grid.querySelectorAll(".boxWrap")].forEach(el=>{
+        el.classList.remove("selected","disabled","opening");
+      });
+    }
+
+    function copyCode(){
+      const code = document.getElementById("codeText").textContent.trim();
+      if (!code || code === "—") return;
+
+      navigator.clipboard.writeText(code).then(()=>showToast("Copied ✅"))
+        .catch(()=>{
+          const ta = document.createElement("textarea");
+          ta.value = code;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          showToast("Copied ✅");
+        });
+    }
+
+    function showToast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(showToast._tm);
+      showToast._tm = setTimeout(()=>t.classList.remove("show"), 1200);
+    }
+
+    overlay.addEventListener("click", (e)=>{
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape" && overlay.style.display === "block") closeModal();
+    });
+  </script>
 </body>
 </html>
