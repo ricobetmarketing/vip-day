@@ -6,7 +6,6 @@
   <title>VIP Mystery Box</title>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@600;800;1000&display=swap" rel="stylesheet">
@@ -24,748 +23,215 @@
     }
 
     *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    html,body{ height:100%; margin:0; overflow: hidden; }
     body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: Inter, sans-serif;
       color:var(--text);
-      background:
-        radial-gradient(950px 520px at 50% -10%, rgba(255,117,226,.22), transparent 60%),
-        radial-gradient(700px 420px at 15% 40%, rgba(255,255,255,.06), transparent 60%),
-        radial-gradient(700px 420px at 85% 55%, rgba(255,117,226,.12), transparent 60%),
-        linear-gradient(180deg, var(--bg), var(--bg));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 22px 14px;
-      overflow-x:hidden;
+      background: radial-gradient(950px 520px at 50% -10%, rgba(255,117,226,.22), transparent 60%), linear-gradient(180deg, var(--bg), var(--bg));
+      display:flex; align-items:center; justify-content:center;
     }
 
     .wrap{
-      width:min(980px, 100%);
+      width:min(500px, 95%);
       border-radius: 34px;
       border:1px solid var(--stroke);
       background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
       box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-    }
-
-    .wrap:before{
-      content:"";
-      position:absolute;
-      inset:0 0 auto 0;
-      height: 180px;
-      background:
-        radial-gradient(900px 200px at 50% 0%, rgba(255,255,255,.10), transparent 62%),
-        radial-gradient(760px 220px at 65% 25%, rgba(255,117,226,.14), transparent 60%);
-      pointer-events:none;
-      opacity:.9;
-    }
-
-    header{
-      position:relative;
-      text-align:center;
-      padding: 26px 18px 10px;
-    }
-
-    .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      color: rgba(246,246,255,.78);
-      font-weight: 900;
-      letter-spacing: .18em;
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-    .dot{
-      width:8px; height:8px; border-radius:999px;
-      background: var(--accent);
-      box-shadow: 0 0 0 6px rgba(255,117,226,.16);
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
     }
 
     h1{
-      margin: 14px 0 6px;
-      font-family: Orbitron, Inter, system-ui;
-      font-size: clamp(34px, 4.4vw, 52px);
-      line-height:1.05;
-      letter-spacing:.02em;
+      font-family: Orbitron; font-size: 28px; margin: 10px 0;
       background: linear-gradient(180deg, #fff, var(--accent));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      text-shadow: 0 14px 28px rgba(0,0,0,.45);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     }
 
-    .content{
-      position:relative;
-      padding: 16px 18px 26px;
-      display:grid;
-      gap: 16px;
+    /* THE BOX CONTAINER */
+    .box-container {
+      position: relative;
+      height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
-    @media (max-width: 860px){
-      .grid{ grid-template-columns: 1fr; }
+    .boxImage {
+      width: 220px;
+      transition: transform 0.1s ease-out;
+      filter: drop-shadow(0 0 15px rgba(255,117,226,0.3));
     }
 
-    .boxWrap{
-      border-radius: 28px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
-      box-shadow: var(--soft);
-      padding: 18px 16px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap: 12px;
-      text-align:center;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .15s ease, filter .15s ease, border-color .15s ease;
-      position:relative;
-      overflow:hidden;
-      min-height: 270px;
+    /* SHAKE ANIMATION */
+    .shake {
+      animation: boxShake 0.2s ease-in-out;
     }
 
-    .boxWrap:hover{ transform: translateY(-2px); filter: brightness(1.03); }
-    .boxWrap.selected{
-      border-color: rgba(255,117,226,.75);
-      box-shadow: 0 0 0 10px rgba(255,117,226,.10), var(--soft);
-      transform: translateY(-3px);
-    }
-    .boxWrap.disabled{
-      cursor:not-allowed;
-      opacity:.6;
-      filter:saturate(.75);
-      transform:none;
+    @keyframes boxShake {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(5deg) scale(1.05); }
+      50% { transform: rotate(-5deg); }
+      75% { transform: rotate(3deg); }
+      100% { transform: rotate(0deg); }
     }
 
-    /* ambient glow */
-    .boxWrap:before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(260px 180px at 20% 25%, rgba(255,117,226,.20), transparent 60%),
-        radial-gradient(240px 180px at 80% 70%, rgba(255,255,255,.06), transparent 60%);
-      opacity:.95;
-      pointer-events:none;
+    /* EXPLODE ANIMATION */
+    .explode {
+      animation: boxExplode 0.5s forwards;
     }
 
-    /* ---------- 3D CHEST (CSS ONLY) ---------- */
-    .chest{
-      width: 180px;
-      height: 130px;
-      position:relative;
-      transform: translateZ(0);
-      filter: drop-shadow(0 22px 28px rgba(0,0,0,.45));
-      z-index:1;
+    @keyframes boxExplode {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      50% { transform: scale(1.5); opacity: 0.8; filter: brightness(5); }
+      100% { transform: scale(2); opacity: 0; }
     }
 
-    /* base */
-    .base{
-      position:absolute;
-      left: 16px;
-      right: 16px;
-      bottom: 12px;
-      height: 70px;
-      border-radius: 18px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
-        linear-gradient(135deg, rgba(255,117,226,.22), rgba(0,0,0,.0));
-      border:1px solid rgba(255,255,255,.14);
-      overflow:hidden;
+    .progress-bar-wrap {
+      width: 100%; height: 8px; background: rgba(255,255,255,0.1);
+      border-radius: 10px; margin-top: 20px; overflow: hidden;
+    }
+    .progress-fill {
+      width: 0%; height: 100%; background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      transition: width 0.3s ease;
     }
 
-    /* front face highlight */
-    .base:before{
-      content:"";
-      position:absolute;
-      inset: 10px 12px 10px 12px;
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), transparent);
-      border:1px solid rgba(255,255,255,.10);
-      opacity:.85;
+    .tap-hint {
+      margin-top: 15px; font-weight: 900; font-size: 14px;
+      letter-spacing: 2px; color: var(--accent);
+      animation: pulse 1.5s infinite;
     }
 
-    /* side bevel */
-    .base:after{
-      content:"";
-      position:absolute;
-      inset:0;
-      border-radius: 18px;
-      box-shadow:
-        inset 18px 0 20px rgba(0,0,0,.22),
-        inset -18px 0 20px rgba(0,0,0,.22),
-        inset 0 18px 24px rgba(255,255,255,.04);
-      pointer-events:none;
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-    /* lid */
-    .lid{
-      position:absolute;
-      left: 22px;
-      right: 22px;
-      top: 10px;
-      height: 62px;
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04)),
-        radial-gradient(140px 70px at 50% 0%, rgba(255,117,226,.28), transparent 60%);
-      border:1px solid rgba(255,255,255,.14);
-      transform-origin: 50% 100%;
-      transform: rotateX(0deg);
-      transition: transform .55s cubic-bezier(.2,.9,.2,1);
-      overflow:hidden;
-    }
-
-    /* lid shine */
-    .lid:before{
-      content:"";
-      position:absolute;
-      width: 160%;
-      height: 70%;
-      left:-40%;
-      top:-35%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
-      transform: rotate(18deg);
-      opacity:.7;
-    }
-
-    /* lid bevel */
-    .lid:after{
-      content:"";
-      position:absolute;
-      inset:0;
-      border-radius: 22px;
-      box-shadow:
-        inset 0 16px 26px rgba(255,255,255,.05),
-        inset 14px 0 18px rgba(0,0,0,.20),
-        inset -14px 0 18px rgba(0,0,0,.20);
-      pointer-events:none;
-    }
-
-    /* hinge strip */
-    .hinge{
-      position:absolute;
-      left: 32px;
-      right: 32px;
-      top: 62px;
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: inset 0 2px 0 rgba(255,255,255,.12);
-      opacity:.9;
-      z-index:2;
-    }
-
-    /* lock */
-    .lock{
-      position:absolute;
-      left:50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(0,0,0,.12));
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow: 0 10px 18px rgba(0,0,0,.25);
-      display:grid;
-      place-items:center;
-      z-index:3;
-    }
-
-    .lock:before{
-      content:"";
-      width: 28px;
-      height: 18px;
-      border-radius: 12px 12px 10px 10px;
-      border: 3px solid rgba(255,255,255,.72);
-      border-bottom: 0;
-      transform: translateY(-2px);
-      opacity:.75;
-      display:block;
-    }
-
-    .lock:after{
-      content:"";
-      width: 10px;
-      height: 14px;
-      border-radius: 6px;
-      background: rgba(255,117,226,.95);
-      box-shadow: 0 0 0 6px rgba(255,117,226,.18);
-      display:block;
-      margin-top: 8px;
-    }
-
-    /* glow under chest */
-    .underGlow{
-      width: 170px;
-      height: 22px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 50% 50%, rgba(255,117,226,.50), transparent 70%);
-      filter: blur(1px);
-      opacity:.65;
-      z-index:0;
-      margin-top: -6px;
-    }
-
-    /* open animation: lid flips back */
-    .boxWrap.opening .lid{
-      transform: rotateX(62deg);
-    }
-    .boxWrap.opening .lock{
-      transform: translateX(-50%) translateY(4px);
-      opacity:.92;
-    }
-
-    .label{
-      position:relative;
-      z-index:1;
-      font-family: Orbitron, Inter, system-ui;
-      font-size: 12px;
-      letter-spacing:.16em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.88);
-      margin-top: 2px;
-    }
-
-    .tap{
-      position:relative;
-      z-index:1;
-      color: rgba(246,246,255,.78);
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing:.10em;
-      text-transform: uppercase;
-    }
-
-    .actions{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 10px;
-      margin-top: 2px;
-    }
-
-    button{
-      border:0;
-      cursor:pointer;
-      font-weight: 1000;
-      letter-spacing:.10em;
-      text-transform: uppercase;
-      border-radius: 999px;
-      padding: 16px 58px;
-      font-size: 18px;
-      color:#101018;
-      background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, var(--accent) 140%);
-      box-shadow: 0 10px 0 rgba(170,70,150,.95), 0 20px 30px rgba(0,0,0,.45);
-      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-    }
-    button:hover{ filter: brightness(1.05); transform: translateY(-1px); }
-    button:active{
-      transform: translateY(6px);
-      box-shadow: 0 4px 0 rgba(170,70,150,.95), 0 12px 18px rgba(0,0,0,.42);
-    }
-    button:disabled{
-      cursor:not-allowed;
-      background: #3a3a3a;
-      color:#9a9a9a;
-      transform: translateY(6px);
-      box-shadow: none;
-    }
-
-    /* modal */
+    /* Modal Styling */
     #overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(7px);
-      z-index: 100;
+      display:none; position:fixed; inset:0;
+      background: rgba(0,0,0,.85); backdrop-filter: blur(10px);
+      z-index: 100; align-items: center; justify-content: center;
     }
+    .modal {
+      background: white; color: #111; padding: 30px;
+      border-radius: 30px; text-align: center; width: 90%; max-width: 400px;
+    }
+    .bigPrize { font-family: Orbitron; font-size: 24px; color: #d42bb2; margin: 15px 0; font-weight: 900; }
+    .codeBox { background: #f0f0f0; border: 2px dashed #ccc; padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .code { font-family: monospace; font-size: 18px; font-weight: 900; }
+    .copyBtn { background: #111; color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: 800; }
+    .closeBtn { margin-top: 20px; width: 100%; padding: 15px; border-radius: 15px; border: none; background: #d42bb2; color: white; font-weight: 900; cursor: pointer; }
 
-    .modal{
-      position:absolute;
-      top:50%; left:50%;
-      transform: translate(-50%, -50%);
-      width:min(460px, calc(100% - 26px));
-      border-radius: 28px;
-      border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
-      color:#111;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .modalTop{
-      padding: 18px 18px 14px;
-      text-align:center;
-      background: linear-gradient(180deg, rgba(255,117,226,.22), transparent);
-      border-bottom: 1px solid rgba(0,0,0,.08);
-    }
-    .modalTop h2{
-      margin:0;
-      font-family: Orbitron, Inter, system-ui;
-      letter-spacing:.12em;
-      text-transform: uppercase;
-      font-size: 18px;
-    }
-
-    .modalBody{
-      padding: 18px;
-      display:grid;
-      gap: 12px;
-      text-align:center;
-    }
-
-    .bigPrize{
-      font-weight: 1000;
-      font-size: 22px;
-      color: rgba(130,30,110,.98);
-      margin-top: 2px;
-    }
-
-    .codeBox{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      padding: 12px 12px;
-      border-radius: 18px;
-      border: 2px dashed rgba(0,0,0,.22);
-      background: rgba(255,117,226,.18);
-    }
-    .code{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-weight: 1000;
-      letter-spacing: .16em;
-      font-size: 16px;
-      user-select: all;
-    }
-    .copyBtn{
-      border:1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.35);
-      color:#111;
-      padding: 10px 12px;
-      border-radius: 14px;
-      cursor:pointer;
-      font-weight: 1000;
-      letter-spacing:.08em;
-      text-transform: uppercase;
-    }
-
-    .modalActions{
-      display:flex;
-      justify-content:center;
-      gap: 10px;
-      flex-wrap:wrap;
-      padding-top: 2px;
-    }
-    .closeBtn{
-      border:none;
-      background:#111;
-      color:#fff;
-      padding: 12px 18px;
-      border-radius: 14px;
-      cursor:pointer;
-      font-weight: 1000;
-      letter-spacing:.08em;
-      text-transform: uppercase;
-    }
-
-    /* toast */
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.72);
-      border: 1px solid rgba(255,255,255,.16);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      letter-spacing:.06em;
-      display:none;
-      z-index: 120;
-      box-shadow: 0 10px 22px rgba(0,0,0,.35);
-    }
-    .toast.show{ display:block; }
-
-    @media (prefers-reduced-motion: reduce){
-      .boxWrap, .boxWrap:hover{ transition:none; transform:none; }
-      .boxWrap.opening .lid{ transform:none; }
-    }
   </style>
 </head>
 
 <body>
+
   <div class="wrap">
     <header>
-      <span class="kicker"><span class="dot"></span> VIP</span>
-      <h1>MYSTERY BOX</h1>
+      <h1>VIP MYSTERY BOX</h1>
+      <div class="tap-hint" id="hintText">TAP TO UNLOCK</div>
     </header>
 
-    <div class="content">
-      <div class="grid" id="grid">
-        <div class="boxWrap" data-box="1" onclick="selectBox(1)">
-          <div class="chest" aria-hidden="true">
-            <div class="lid"></div>
-            <div class="hinge"></div>
-            <div class="base"></div>
-            <div class="lock"></div>
-          </div>
-          <div class="underGlow" aria-hidden="true"></div>
-          <div class="label">Box A</div>
-          <div class="tap">Tap to select</div>
-        </div>
+    <div class="box-container" onclick="handleTap()">
+      <img id="mainBox" class="boxImage" src="https://ricomx.ft-crm.com/media-api/serve/df6b594c-e8bd-402d-b186-efca9501a635_2.png" alt="Box">
+    </div>
 
-        <div class="boxWrap" data-box="2" onclick="selectBox(2)">
-          <div class="chest" aria-hidden="true">
-            <div class="lid"></div>
-            <div class="hinge"></div>
-            <div class="base"></div>
-            <div class="lock"></div>
-          </div>
-          <div class="underGlow" aria-hidden="true"></div>
-          <div class="label">Box B</div>
-          <div class="tap">Tap to select</div>
-        </div>
-
-        <div class="boxWrap" data-box="3" onclick="selectBox(3)">
-          <div class="chest" aria-hidden="true">
-            <div class="lid"></div>
-            <div class="hinge"></div>
-            <div class="base"></div>
-            <div class="lock"></div>
-          </div>
-          <div class="underGlow" aria-hidden="true"></div>
-          <div class="label">Box C</div>
-          <div class="tap">Tap to select</div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="openBtn" onclick="openSelected()" disabled>OPEN</button>
-      </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-fill" id="progress"></div>
     </div>
   </div>
 
-  <!-- Result Modal -->
-  <div id="overlay" role="dialog" aria-modal="true">
+  <div id="overlay">
     <div class="modal">
-      <div class="modalTop">
-        <h2 id="modalTitle">RESULT</h2>
+      <h2 style="margin:0; font-size: 16px; opacity: 0.6;">UNLOCKED</h2>
+      <div class="bigPrize" id="prizeText">×10 FREE SPINS</div>
+      <div class="codeBox">
+        <div class="code" id="codeText">VIP-FREE-SPINS</div>
+        <button class="copyBtn" onclick="copyCode()">COPY</button>
       </div>
-
-      <div class="modalBody">
-        <div class="bigPrize" id="prizeText">—</div>
-
-        <div class="codeBox" id="codeBox">
-          <div style="text-align:left;">
-            <div style="font-size:12px; font-weight:1000; letter-spacing:.10em; text-transform:uppercase; color:rgba(0,0,0,.65);">
-              CODE
-            </div>
-            <div class="code" id="codeText">—</div>
-          </div>
-          <button class="copyBtn" onclick="copyCode()">COPY</button>
-        </div>
-
-        <div class="modalActions">
-          <button class="closeBtn" onclick="closeModal()">DONE</button>
-        </div>
-      </div>
+      <button class="closeBtn" onclick="location.reload()">DONE</button>
     </div>
   </div>
 
-  <div class="toast" id="toast">Copied ✅</div>
-
-  <!-- Sound Effects -->
-  <audio id="pickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
-  <audio id="openSound" src="https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3" preload="auto"></audio>
-  <audio id="winSound"  src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
-  <audio id="loseSound" src="https://assets.mixkit.co/active_storage/sfx/2195/2195-preview.mp3" preload="auto"></audio>
+  <audio id="tapSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+  <audio id="breakSound" src="https://assets.mixkit.co/active_storage/sfx/2857/2857-preview.mp3"></audio>
 
   <script>
-    // Actual outcomes only (no fake x500 payout here)
-    const OUTCOMES = [
-      { label: "×3 FREE SPINS",  spins: 3,  weight: 46, kind: "win" },
-      { label: "×5 FREE SPINS",  spins: 5,  weight: 30, kind: "win" },
-      { label: "×10 FREE SPINS", spins: 10, weight: 18, kind: "win" },
-      { label: "THANK YOU",      spins: 0,  weight: 6,  kind: "lose" }
-    ];
+    let taps = 0;
+    const requiredTaps = 8; // Change this to require more or fewer clicks
+    let isBroken = false;
 
-    let selected = null;
-    let opened = false;
-
-    const openBtn = document.getElementById("openBtn");
-    const grid = document.getElementById("grid");
+    const box = document.getElementById("mainBox");
+    const progress = document.getElementById("progress");
+    const hintText = document.getElementById("hintText");
+    const tapSound = document.getElementById("tapSound");
+    const breakSound = document.getElementById("breakSound");
     const overlay = document.getElementById("overlay");
 
-    const pickSound = document.getElementById("pickSound");
-    const openSound = document.getElementById("openSound");
-    const winSound  = document.getElementById("winSound");
-    const loseSound = document.getElementById("loseSound");
+    function handleTap() {
+      if (isBroken) return;
 
-    function play(aud){
-      aud.currentTime = 0;
-      aud.play().catch(()=>{});
-    }
+      taps++;
+      
+      // Play tap sound
+      tapSound.currentTime = 0;
+      tapSound.play().catch(()=>{});
 
-    function selectBox(n){
-      if (opened) return;
+      // Visual feedback
+      box.classList.remove("shake");
+      void box.offsetWidth; // Trigger reflow
+      box.classList.add("shake");
 
-      selected = n;
-      play(pickSound);
+      // Update progress
+      const percent = (taps / requiredTaps) * 100;
+      progress.style.width = percent + "%";
 
-      [...grid.querySelectorAll(".boxWrap")].forEach(el=>{
-        el.classList.remove("selected");
-      });
-
-      const box = grid.querySelector(`.boxWrap[data-box="${n}"]`);
-      box.classList.add("selected");
-      openBtn.disabled = false;
-    }
-
-    function weightedPick(items){
-      const total = items.reduce((s,i)=>s+(i.weight||1),0);
-      let r = Math.random()*total;
-      for (const it of items){
-        r -= (it.weight||1);
-        if (r <= 0) return it;
+      if (taps >= requiredTaps) {
+        breakBox();
       }
-      return items[items.length-1];
     }
 
-    function makeCode(prefix){
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      const seg = (n)=>Array.from({length:n}, ()=>chars[Math.floor(Math.random()*chars.length)]).join("");
-      return `${prefix}-${seg(4)}-${seg(4)}`;
-    }
+    function breakBox() {
+      isBroken = true;
+      hintText.innerText = "OPENING...";
+      
+      // Play break sound
+      breakSound.play().catch(()=>{});
 
-    function openSelected(){
-      if (!selected || opened) return;
+      // Explosion Effect
+      box.classList.add("explode");
 
-      opened = true;
-      openBtn.disabled = true;
-
-      const boxes = [...grid.querySelectorAll(".boxWrap")];
-      boxes.forEach(el=>{
-        const n = Number(el.getAttribute("data-box"));
-        if (n !== selected) el.classList.add("disabled");
-      });
-
-      const box = grid.querySelector(`.boxWrap[data-box="${selected}"]`);
-      box.classList.add("opening");
-      play(openSound);
-
-      setTimeout(()=>{
-        revealResult();
-      }, 650);
-    }
-
-    function revealResult(){
-      const outcome = weightedPick(OUTCOMES);
-
-      const prizeText = document.getElementById("prizeText");
-      const modalTitle = document.getElementById("modalTitle");
-      const codeText = document.getElementById("codeText");
-      const codeBox = document.getElementById("codeBox");
-
-      if (outcome.kind === "win"){
-        modalTitle.textContent = "CONGRATS";
-        prizeText.textContent = outcome.label;
-
-        const code = makeCode("VIPFS");
-        codeText.textContent = code;
-        codeBox.style.display = "flex";
-
-        play(winSound);
+      // Final Confetti and Modal
+      setTimeout(() => {
         confetti({
-          particleCount: 170,
-          spread: 75,
-          origin: { y: 0.65 },
-          colors: ["#ff75e2", "#ffffff", "#9b5cff"]
+          particleCount: 200,
+          spread: 90,
+          origin: { y: 0.6 },
+          colors: ["#ff75e2", "#ffffff", "#00ffaa"]
         });
-      } else {
-        modalTitle.textContent = "TRY AGAIN";
-        prizeText.textContent = "THANK YOU";
-
-        codeText.textContent = "—";
-        codeBox.style.display = "none";
-
-        play(loseSound);
-        confetti({
-          particleCount: 90,
-          spread: 60,
-          origin: { y: 0.65 },
-          colors: ["#ff75e2", "#ffffff"]
-        });
-      }
-
-      overlay.style.display = "block";
+        
+        revealReward();
+      }, 500);
     }
 
-    function closeModal(){
-      overlay.style.display = "none";
-      // ONE TRY ONLY by default.
-      // If you want replay, uncomment:
-      // resetGame();
+    function revealReward() {
+      // Logic for random rewards
+      const rewards = ["×5 FREE SPINS", "×10 FREE SPINS", "×20 FREE SPINS"];
+      const reward = rewards[Math.floor(Math.random() * rewards.length)];
+      
+      document.getElementById("prizeText").innerText = reward;
+      document.getElementById("codeText").innerText = "VIP" + Math.floor(1000 + Math.random() * 9000);
+      
+      overlay.style.display = "flex";
     }
 
-    function resetGame(){
-      opened = false;
-      selected = null;
-      openBtn.disabled = true;
-
-      [...grid.querySelectorAll(".boxWrap")].forEach(el=>{
-        el.classList.remove("selected","disabled","opening");
-      });
+    function copyCode() {
+      const code = document.getElementById("codeText").innerText;
+      navigator.clipboard.writeText(code);
+      alert("Copied: " + code);
     }
-
-    function copyCode(){
-      const code = document.getElementById("codeText").textContent.trim();
-      if (!code || code === "—") return;
-
-      navigator.clipboard.writeText(code).then(()=>showToast("Copied ✅"))
-        .catch(()=>{
-          const ta = document.createElement("textarea");
-          ta.value = code;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-          showToast("Copied ✅");
-        });
-    }
-
-    function showToast(msg){
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(showToast._tm);
-      showToast._tm = setTimeout(()=>t.classList.remove("show"), 1200);
-    }
-
-    overlay.addEventListener("click", (e)=>{
-      if (e.target === overlay) closeModal();
-    });
-    document.addEventListener("keydown", (e)=>{
-      if (e.key === "Escape" && overlay.style.display === "block") closeModal();
-    });
   </script>
 </body>
 </html>
