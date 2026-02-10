@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>VIP DAY - Spin & Win</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -15,406 +15,157 @@
       --text:#f5f7ff;
       --muted: rgba(245,247,255,.72);
       --red:#ff4d4d;
-
       --radius: 26px;
       --shadow: 0 22px 60px rgba(0,0,0,.55);
       --soft: 0 12px 30px rgba(0,0,0,.35);
-
-      /* Responsive knobs (keeps same design, just scales) */
-      --padX: clamp(14px, 2.2vw, 22px);
-      --padYTop: clamp(20px, 3vw, 28px);
-      --carouselH: clamp(200px, 28vw, 240px);
-      --cardW: clamp(148px, 22vw, 180px);
-      --cardH: clamp(138px, 18vw, 160px);
-      --cardGap: clamp(10px, 2.2vw, 15px);
-      --cardPad: clamp(12px, 2vw, 16px);
-      --imgSize: clamp(64px, 10vw, 86px);
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ height: 100%; width: 100%; margin: 0; padding: 0; }
+    
     body{
-      margin:0;
       color:var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       background:
         radial-gradient(900px 520px at 50% -10%, rgba(255,117,226,.18), transparent 60%),
-        radial-gradient(700px 480px at 20% 40%, rgba(255,77,77,.10), transparent 55%),
         linear-gradient(180deg, var(--bg), var(--bg));
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 22px 14px;
       overflow-x:hidden;
     }
 
     .shell{
-      width:min(980px, 100%);
+      width: 95%;
+      max-width: 800px;
       border: 1px solid var(--stroke);
       background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
       border-radius: 32px;
       box-shadow: var(--shadow);
       overflow:hidden;
       position:relative;
-    }
-
-    .shell:before{
-      content:"";
-      position:absolute;
-      inset:0 0 auto 0;
-      height:160px;
-      background:
-        radial-gradient(900px 180px at 50% 0%, rgba(255,255,255,.10), transparent 60%),
-        radial-gradient(700px 180px at 70% 30%, rgba(255,117,226,.12), transparent 60%);
-      pointer-events:none;
-      opacity:.9;
+      margin: 20px auto;
     }
 
     .header{
       position:relative;
-      padding: var(--padYTop) var(--padX) 14px;
+      padding: 24px 15px 10px;
       text-align:center;
     }
 
     .kicker{
       display:inline-flex;
       align-items:center;
-      gap:10px;
-      padding: 8px 12px;
+      gap:8px;
+      padding: 6px 12px;
       border-radius: 999px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.22);
       color: var(--muted);
       font-weight: 700;
-      letter-spacing: .18em;
-      font-size: 12px;
+      letter-spacing: .15em;
+      font-size: 10px;
       text-transform: uppercase;
     }
 
-    .dot{
-      width:8px; height:8px; border-radius:999px;
-      background: var(--pink);
-      box-shadow: 0 0 0 6px rgba(255,117,226,.16);
-    }
+    .dot{ width:6px; height:6px; border-radius:999px; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
 
     .header h1{
-      margin: 14px 0 8px;
-      font-size: clamp(32px, 4vw, 46px);
-      line-height:1.05;
-      letter-spacing: .02em;
+      margin: 10px 0 5px;
+      font-size: clamp(24px, 6vw, 40px);
       background: linear-gradient(180deg, #fff, var(--pink));
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
-      text-shadow: 0 12px 24px rgba(0,0,0,.45);
-    }
-    .header p{
-      margin: 0;
-      color: var(--muted);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      font-weight: 800;
-      font-size: 12px;
     }
 
-    .main{
-      position:relative;
-      padding: 16px var(--padX) 26px;
-      display:grid;
-      gap: 18px;
-    }
+    .main{ padding: 10px 15px 25px; display:grid; gap: 15px; }
 
     .carousel-container{
       position:relative;
       width:100%;
-      height: var(--carouselH);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)),
-        rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: var(--soft);
+      height: 180px; /* Adjusted for mobile height */
+      border-radius: 20px;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.1);
       overflow:hidden;
     }
 
-    .carousel-container:before{
-      content:"";
-      position:absolute;
-      inset: 10px;
-      border-radius: 22px;
-      border: 2px solid rgba(255,117,226,.55);
-      pointer-events:none;
-    }
-
-    .carousel-container:after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.55), transparent 22%, transparent 78%, rgba(0,0,0,.55));
-      pointer-events:none;
-      z-index: 4;
-    }
-
+    /* Fixed Red Pointer */
     .pointer{
       position:absolute;
-      top: 10px;
-      left:50%;
+      top: 0; left:50%;
       transform: translateX(-50%);
       width:0; height:0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      border-top: 24px solid var(--red);
-      z-index: 6;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,.55));
-    }
-    .pointer:before{
-      content:"";
-      position:absolute;
-      left:-10px; top:-20px;
-      width:20px; height:20px;
-      border-radius:999px;
-      background: rgba(255,77,77,.22);
-      box-shadow: 0 0 0 10px rgba(255,77,77,.10);
-      z-index:-1;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 20px solid var(--red);
+      z-index: 10;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
     }
 
-    /* moving track */
     .prize-track{
       display:flex;
       align-items:center;
       height:100%;
-      padding: 0 var(--cardPad);
       transition: transform 4s cubic-bezier(0.12, 0, 0.08, 1);
       will-change: transform;
     }
 
     .prize-card{
-      min-width: var(--cardW);
-      height: var(--cardH);
-      margin: 0 var(--cardGap);
-      border-radius: 22px;
-      background: linear-gradient(180deg, #ffffff, #f6f6f6);
-      color:#111;
-      border: 1px solid rgba(0,0,0,.08);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      position:relative;
-      overflow:hidden;
-      box-shadow: 0 14px 28px rgba(0,0,0,.12);
-      user-select:none;
-      transition: transform .15s ease, filter .15s ease;
-      flex: 0 0 auto;
-    }
-    .prize-card:hover{
-      transform: translateY(-2px);
-      filter: brightness(1.02);
-    }
-
-    .prize-card:before{
-      content:"";
-      position:absolute;
-      inset:-60% -40% auto -40%;
-      height: 140px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.70), transparent);
-      transform: rotate(20deg);
-      opacity:.5;
-    }
-
-    .prize-card img{
-      width: var(--imgSize);
-      height: var(--imgSize);
-      object-fit: contain;
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,.18));
-    }
-
-    .prize-card p{
-      margin:0;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing:.02em;
-      padding: 0 10px;
-      text-align:center;
-      max-width: calc(var(--cardW) - 24px);
-      overflow:hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .controls{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 10px;
-      padding-top: 6px;
-    }
-
-    #spin-btn{
-      padding: 18px 74px;
-      font-size: 20px;
-      font-weight: 1000;
-      letter-spacing:.08em;
-      color:#141414;
-      background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, var(--pink) 120%);
-      border:none;
-      border-radius: 999px;
-      cursor:pointer;
-      box-shadow: 0 10px 0 rgba(170,70,150,.95), 0 20px 30px rgba(0,0,0,.45);
-      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-      max-width: 100%;
-      touch-action: manipulation;
-    }
-    #spin-btn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
-    #spin-btn:active{
-      transform: translateY(6px);
-      box-shadow: 0 4px 0 rgba(170,70,150,.95), 0 12px 18px rgba(0,0,0,.42);
-    }
-    #spin-btn:disabled{
-      background: #3a3a3a;
-      color:#9a9a9a;
-      cursor:not-allowed;
-      transform: translateY(6px);
-      box-shadow: none;
-    }
-
-    /* modal */
-    #modal-overlay{
-      display:none;
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.78);
-      backdrop-filter: blur(6px);
-      z-index: 100;
-      padding: 18px 12px;
-    }
-
-    #modal{
-      position:absolute;
-      top:50%; left:50%;
-      transform: translate(-50%, -50%);
-      width:min(420px, calc(100% - 26px));
-      border-radius: 28px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
-      color:#111;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .modal-top{
-      padding: 18px 18px 14px;
-      background: linear-gradient(180deg, rgba(255,117,226,.22), transparent);
-      border-bottom: 1px solid rgba(0,0,0,.08);
-      text-align:center;
-    }
-    .modal-top h2{
-      margin:0;
-      font-size: 18px;
-      letter-spacing:.12em;
-      text-transform: uppercase;
-    }
-    .modal-top p{
-      margin: 8px 0 0;
-      color: rgba(0,0,0,.65);
-      font-weight: 800;
-      letter-spacing:.06em;
-      text-transform: uppercase;
-      font-size: 12px;
-    }
-
-    .modal-body{
-      padding: 18px;
-      display:grid;
-      gap: 12px;
-      text-align:center;
-    }
-
-    #prize-display{
-      margin: 2px 0 0;
-      color: rgba(130,30,110,.95);
-      font-size: 18px;
-      font-weight: 1000;
-    }
-
-    .promo-code{
-      font-size: 22px;
-      font-weight: 1000;
-      letter-spacing: .14em;
-      color: #111;
-      background: rgba(255,117,226,.18);
-      padding: 14px 14px;
+      min-width: 140px; /* Fixed width for predictable math */
+      height: 130px;
+      margin: 0 10px;
       border-radius: 18px;
-      border: 2px dashed rgba(0,0,0,.22);
-      display:block;
-      user-select: all;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .modal-actions{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      flex-wrap:wrap;
-      padding-top: 4px;
-    }
-
-    .close-btn{
-      background: #111;
-      color:#fff;
-      border:none;
-      padding: 12px 18px;
-      border-radius: 14px;
-      cursor:pointer;
-      font-weight: 900;
-      letter-spacing:.06em;
-      text-transform: uppercase;
-    }
-
-    .copy-btn{
-      background: rgba(255,255,255,0);
+      background: white;
       color:#111;
-      border: 1px solid rgba(0,0,0,.18);
-      padding: 12px 18px;
-      border-radius: 14px;
-      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      flex-shrink: 0;
+    }
+
+    .prize-card img{ width: 60px; height: 60px; object-fit: contain; }
+    .prize-card p{ margin: 8px 0 0; font-size: 11px; font-weight: 900; text-align: center; }
+
+    /* Controls */
+    .controls{ text-align: center; margin-top: 10px; }
+    #spin-btn{
+      padding: 15px 50px;
+      font-size: 18px;
       font-weight: 900;
-      letter-spacing:.06em;
-      text-transform: uppercase;
-    }
-
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.7);
-      border: 1px solid rgba(255,255,255,.16);
-      color: var(--text);
-      padding: 10px 14px;
+      color:#000;
+      background: var(--pink);
+      border:none;
       border-radius: 999px;
-      font-size: 12px;
-      letter-spacing:.06em;
-      display:none;
-      z-index: 110;
-      box-shadow: 0 10px 22px rgba(0,0,0,.35);
-      max-width: calc(100% - 24px);
-      text-align:center;
+      cursor:pointer;
+      box-shadow: 0 6px 0 #aa4696;
     }
-    .toast.show{ display:block; }
+    #spin-btn:active{ transform: translateY(4px); box-shadow: 0 2px 0 #aa4696; }
+    #spin-btn:disabled{ opacity: 0.5; cursor: not-allowed; }
 
-    /* Mobile-specific touch polish (same look, more usable) */
-    @media (max-width: 520px){
-      body{ padding: 16px 12px; }
-      .shell{ border-radius: 28px; }
-      .carousel-container:before{ inset: 8px; }
-      #spin-btn{
-        padding: 16px min(56px, 14vw);
-        font-size: 18px;
-      }
+    /* Modal Styling */
+    #modal-overlay{
+      display:none; position:fixed; inset:0; background: rgba(0,0,0,.85);
+      backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center;
     }
+    #modal{
+      width: 90%; max-width: 350px; background: white; border-radius: 24px;
+      padding: 25px; text-align: center; color: #111;
+    }
+    .promo-code{
+      font-size: 20px; font-weight: 900; background: #f0f0f0;
+      padding: 15px; border-radius: 12px; border: 2px dashed #ccc;
+      margin: 15px 0; display: block;
+    }
+    .copy-btn, .close-btn { 
+      padding: 12px; border-radius: 10px; font-weight: 900; border: none; cursor: pointer; width: 100%; margin-top: 8px;
+    }
+    .copy-btn { background: var(--pink); color: white; }
+    .close-btn { background: #eee; color: #333; }
+
+    /* Toast */
+    .toast{ position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: black; color: white; padding: 10px 20px; border-radius: 20px; display: none; z-index: 200; }
   </style>
 </head>
 
@@ -422,8 +173,7 @@
   <div class="shell">
     <div class="header">
       <span class="kicker"><span class="dot"></span> VIP EXCLUSIVE</span>
-      <h1>SPIN &amp; WIN</h1>
-      <p>Spin the reel to reveal your prize</p>
+      <h1>SPIN & WIN</h1>
     </div>
 
     <div class="main">
@@ -438,30 +188,17 @@
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal-overlay" role="dialog" aria-modal="true">
+  <div id="modal-overlay">
     <div id="modal">
-      <div class="modal-top">
-        <h2>Jackpot</h2>
-        <p>You’ve unlocked</p>
-      </div>
-
-      <div class="modal-body">
-        <div id="prize-display"></div>
-        <span class="promo-code" id="promo-code">------</span>
-
-        <div class="modal-actions">
-          <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
-          <button class="close-btn" onclick="closeModal()">CLAIM PRIZE</button>
-        </div>
-      </div>
+      <h2 style="margin:0">JACKPOT!</h2>
+      <p id="prize-display"></p>
+      <span class="promo-code" id="promo-code"></span>
+      <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
+      <button class="close-btn" onclick="closeModal()">CLAIM</button>
     </div>
   </div>
 
   <div class="toast" id="toast">Copied ✅</div>
-
-  <audio id="tick-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
-  <audio id="win-sound"  src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
 
   <script>
     const prizes = [
@@ -473,137 +210,137 @@
     ];
 
     const track = document.getElementById("track");
+    const spinBtn = document.getElementById("spin-btn");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const prizeDisplay = document.getElementById("prize-display");
+    const promoCodeEl = document.getElementById("promo-code");
 
+    const cardBaseWidth = 140;
+    const cardMargin = 10;
+    const fullCardWidth = cardBaseWidth + (cardMargin * 2); // 160px
     let spinning = false;
 
-    // Use real computed sizes so mobile/desktop always aligns perfectly
-    function getSizes(){
-      const card = document.querySelector(".prize-card");
-      const container = document.querySelector(".carousel-container");
-      if (!card || !container) return null;
+    // ===== LocalStorage (Play Once) =====
+    const STORAGE_KEY = "vip_spin_result_v1";
 
-      const cardRect = card.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
+    function getSavedResult(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      }catch(e){
+        return null;
+      }
+    }
 
-      // Gap is the horizontal margin on each side (same value left/right)
-      const cs = getComputedStyle(card);
-      const mL = parseFloat(cs.marginLeft) || 0;
-      const mR = parseFloat(cs.marginRight) || 0;
-      const cardWidth = cardRect.width + mL + mR;
+    function saveResult(result){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+      }catch(e){}
+    }
 
-      return {
-        cardWidth,
-        containerWidth: containerRect.width
-      };
+    function lockToSavedResult(saved){
+      // Disable spin, keep the winning code visible when they return
+      spinBtn.disabled = true;
+      spinBtn.textContent = "ALREADY PLAYED";
+
+      // Show their existing result in the modal (same UI, no new design)
+      prizeDisplay.innerText = saved.name;
+      promoCodeEl.innerText = saved.code;
+      modalOverlay.style.display = "flex";
+
+      // Keep the carousel in a neutral position (don’t re-spin)
+      track.style.transition = "none";
+      track.style.transform = "translateX(0)";
     }
 
     function init() {
-      const totalCards = 60;
-      for (let i = 0; i < totalCards; i++) {
+      // Create 80 cards for a long scrolling effect
+      for (let i = 0; i < 80; i++) {
         const prize = prizes[i % prizes.length];
         const card = document.createElement("div");
         card.className = "prize-card";
-        card.innerHTML = `<img src="${prize.img}" alt="${prize.name}"><p>${prize.name}</p>`;
+        card.innerHTML = `<img src="${prize.img}"><p>${prize.name}</p>`;
         track.appendChild(card);
+      }
+
+      // If already played, restore result
+      const saved = getSavedResult();
+      if (saved && saved.code) {
+        lockToSavedResult(saved);
       }
     }
 
     function spinWheel() {
+      // If already saved, block replay
+      const saved = getSavedResult();
+      if (saved && saved.code) {
+        lockToSavedResult(saved);
+        return;
+      }
+
       if (spinning) return;
       spinning = true;
+      spinBtn.disabled = true;
 
-      const btn = document.getElementById("spin-btn");
-      const tick = document.getElementById("tick-sound");
-      btn.disabled = true;
-
-      const sizes = getSizes();
-      const cardWidth = sizes ? sizes.cardWidth : 210;
-      const containerWidth = sizes ? sizes.containerWidth : document.querySelector(".carousel-container").offsetWidth;
-
-      // winner index (near the end so it feels like a real spin)
-      const targetIndex = Math.floor(Math.random() * 10) + 45; // 45..54
+      const targetIndex = 60 + Math.floor(Math.random() * 10); // 60..69
       const winner = prizes[targetIndex % prizes.length];
 
-      const finalOffset = (targetIndex * cardWidth) - (containerWidth / 2) + (cardWidth / 2);
+      const containerWidth = document.querySelector(".carousel-container").offsetWidth;
+      const centerPoint = containerWidth / 2;
+      const finalOffset = (targetIndex * fullCardWidth) + (fullCardWidth / 2) - centerPoint;
+
+      track.style.transition = "transform 4s cubic-bezier(0.12, 0, 0.08, 1)";
       track.style.transform = `translateX(-${finalOffset}px)`;
 
-      // ticking sound
-      let ticks = 0;
-      const tickInterval = setInterval(() => {
-        tick.currentTime = 0;
-        tick.play().catch(()=>{});
-        ticks++;
-        if (ticks > 18) clearInterval(tickInterval);
-      }, 160);
-
       setTimeout(() => {
-        clearInterval(tickInterval);
-        triggerWin(winner);
-        btn.disabled = false;
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff75e2', '#ffffff'] });
+
+        prizeDisplay.innerText = winner.name;
+        promoCodeEl.innerText = winner.code;
+        modalOverlay.style.display = "flex";
+
+        // Save permanently (play once)
+        saveResult({ name: winner.name, code: winner.code, ts: Date.now() });
+
+        // Lock button for future visits
+        spinBtn.disabled = true;
+        spinBtn.textContent = "ALREADY PLAYED";
+
         spinning = false;
       }, 4100);
     }
 
-    function triggerWin(prize) {
-      document.getElementById("win-sound").play().catch(()=>{});
-
-      confetti({
-        particleCount: 140,
-        spread: 70,
-        origin: { y: 0.65 },
-        colors: ["#ff75e2", "#ffffff", "#ff4d4d"]
-      });
-
-      document.getElementById("prize-display").innerText = prize.name;
-      document.getElementById("promo-code").innerText = prize.code;
-      document.getElementById("modal-overlay").style.display = "block";
-    }
-
     function closeModal() {
-      document.getElementById("modal-overlay").style.display = "none";
+      // If they already have a saved result, keep it locked (do NOT reset)
+      const saved = getSavedResult();
+      modalOverlay.style.display = "none";
 
-      // reset for next spin
+      if (saved && saved.code) {
+        // Keep locked, keep track neutral
+        spinBtn.disabled = true;
+        spinBtn.textContent = "ALREADY PLAYED";
+        track.style.transition = "none";
+        track.style.transform = "translateX(0)";
+        spinning = false;
+        return;
+      }
+
+      // (Fallback) if no saved result, reset like original
+      spinBtn.disabled = false;
+      spinBtn.textContent = "SPIN NOW";
+      spinning = false;
       track.style.transition = "none";
       track.style.transform = "translateX(0)";
-      setTimeout(() => {
-        track.style.transition = "transform 4s cubic-bezier(0.12, 0, 0.08, 1)";
-      }, 50);
     }
 
     function copyCode() {
-      const code = document.getElementById("promo-code").innerText.trim();
-      if (!code || code === "------") return;
-
-      navigator.clipboard.writeText(code).then(() => showToast("Copied ✅"))
-        .catch(() => {
-          const ta = document.createElement("textarea");
-          ta.value = code;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-          showToast("Copied ✅");
-        });
-    }
-
-    function showToast(msg){
+      const code = promoCodeEl.innerText || "";
+      navigator.clipboard.writeText(code).catch(()=>{});
       const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(showToast._tm);
-      showToast._tm = setTimeout(()=>t.classList.remove("show"), 1200);
+      t.style.display = "block";
+      setTimeout(() => t.style.display = "none", 1500);
     }
-
-    // Keep alignment correct if user rotates phone / resizes
-    window.addEventListener("resize", () => {
-      if (!spinning) {
-        track.style.transition = "none";
-        track.style.transform = "translateX(0)";
-        setTimeout(() => {
-          track.style.transition = "transform 4s cubic-bezier(0.12, 0, 0.08, 1)";
-        }, 30);
-      }
-    });
 
     init();
   </script>
