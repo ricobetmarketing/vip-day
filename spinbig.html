@@ -1,347 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>VIP DAY - Spin & Win</title>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>VIP DAY - Spin & Win</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <style>
-    :root{
-      --pink:#ff75e2;
-      --bg:#121125;
-      --panel: rgba(255,255,255,.06);
-      --stroke: rgba(255,255,255,.12);
-      --text:#f5f7ff;
-      --muted: rgba(245,247,255,.72);
-      --red:#ff4d4d;
-      --radius: 26px;
-      --shadow: 0 22px 60px rgba(0,0,0,.55);
-      --soft: 0 12px 30px rgba(0,0,0,.35);
-    }
+<style>
+:root{
+  --pink:#ff75e2;
+  --bg:#121125;
+  --stroke: rgba(255,255,255,.12);
+  --text:#f5f7ff;
+  --red:#ff4d4d;
+  --shadow: 0 22px 60px rgba(0,0,0,.55);
+}
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html,body{ height: 100%; width: 100%; margin: 0; padding: 0; }
-    
-    body{
-      color:var(--text);
-      font-family: system-ui, -apple-system, sans-serif;
-      background:
-        radial-gradient(900px 520px at 50% -10%, rgba(255,117,226,.18), transparent 60%),
-        linear-gradient(180deg, var(--bg), var(--bg));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow-x:hidden;
-    }
+*{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html,body{ height:100%; margin:0; }
 
-    .shell{
-      width: 95%;
-      max-width: 800px;
-      border: 1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-      border-radius: 32px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-      margin: 20px auto;
-    }
+body{
+  background:
+    radial-gradient(900px 520px at 50% -10%, rgba(255,117,226,.18), transparent 60%),
+    var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family: system-ui, -apple-system, sans-serif;
+  color:var(--text);
+}
 
-    .header{
-      position:relative;
-      padding: 24px 15px 10px;
-      text-align:center;
-    }
+.shell{
+  width:95%;
+  max-width:800px;
+  border:1px solid var(--stroke);
+  border-radius:32px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  background:rgba(255,255,255,.04);
+}
 
-    .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      color: var(--muted);
-      font-weight: 700;
-      letter-spacing: .15em;
-      font-size: 10px;
-      text-transform: uppercase;
-    }
+.header{
+  text-align:center;
+  padding:24px 15px 10px;
+}
 
-    .dot{ width:6px; height:6px; border-radius:999px; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+.header h1{
+  margin:0;
+  font-size: clamp(24px, 6vw, 40px);
+  background: linear-gradient(180deg, #fff, var(--pink));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
 
-    .header h1{
-      margin: 10px 0 5px;
-      font-size: clamp(24px, 6vw, 40px);
-      background: linear-gradient(180deg, #fff, var(--pink));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-    }
+.main{ padding:20px; }
 
-    .main{ padding: 10px 15px 25px; display:grid; gap: 15px; }
+.carousel-container{
+  position:relative;
+  height:180px;
+  border-radius:20px;
+  background:rgba(0,0,0,.35);
+  overflow:hidden;
+}
 
-    .carousel-container{
-      position:relative;
-      width:100%;
-      height: 180px; /* Adjusted for mobile height */
-      border-radius: 20px;
-      background: rgba(0,0,0,.3);
-      border: 1px solid rgba(255,255,255,.1);
-      overflow:hidden;
-    }
+.pointer{
+  position:absolute;
+  top:0; left:50%;
+  transform:translateX(-50%);
+  width:0; height:0;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-top:20px solid var(--red);
+  z-index:10;
+}
 
-    /* Fixed Red Pointer */
-    .pointer{
-      position:absolute;
-      top: 0; left:50%;
-      transform: translateX(-50%);
-      width:0; height:0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-top: 20px solid var(--red);
-      z-index: 10;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
-    }
+.prize-track{
+  display:flex;
+  align-items:center;
+  height:100%;
+  transition: transform 4s cubic-bezier(0.12,0,0.08,1);
+  will-change: transform;
+}
 
-    .prize-track{
-      display:flex;
-      align-items:center;
-      height:100%;
-      transition: transform 4s cubic-bezier(0.12, 0, 0.08, 1);
-      will-change: transform;
-    }
+.prize-card{
+  min-width:150px;
+  height:150px;
+  margin:0 12px;
+  border-radius:22px;
+  overflow:hidden;
+  flex-shrink:0;
+  background:transparent;
+}
 
-    .prize-card{
-      min-width: 140px; /* Fixed width for predictable math */
-      height: 130px;
-      margin: 0 10px;
-      border-radius: 18px;
-      background: white;
-      color:#111;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      flex-shrink: 0;
-    }
+.prize-card img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:22px;
+  user-select:none;
+  -webkit-user-drag:none;
+}
 
-    .prize-card img{ width: 60px; height: 60px; object-fit: contain; }
-    .prize-card p{ margin: 8px 0 0; font-size: 11px; font-weight: 900; text-align: center; }
+.controls{
+  text-align:center;
+  margin-top:20px;
+}
 
-    /* Controls */
-    .controls{ text-align: center; margin-top: 10px; }
-    #spin-btn{
-      padding: 15px 50px;
-      font-size: 18px;
-      font-weight: 900;
-      color:#000;
-      background: var(--pink);
-      border:none;
-      border-radius: 999px;
-      cursor:pointer;
-      box-shadow: 0 6px 0 #aa4696;
-    }
-    #spin-btn:active{ transform: translateY(4px); box-shadow: 0 2px 0 #aa4696; }
-    #spin-btn:disabled{ opacity: 0.5; cursor: not-allowed; }
+#spin-btn{
+  padding:15px 50px;
+  font-size:18px;
+  font-weight:900;
+  border:none;
+  border-radius:999px;
+  cursor:pointer;
+  background:var(--pink);
+  color:#000;
+  box-shadow:0 6px 0 #aa4696;
+}
 
-    /* Modal Styling */
-    #modal-overlay{
-      display:none; position:fixed; inset:0; background: rgba(0,0,0,.85);
-      backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center;
-    }
-    #modal{
-      width: 90%; max-width: 350px; background: white; border-radius: 24px;
-      padding: 25px; text-align: center; color: #111;
-    }
-    .promo-code{
-      font-size: 20px; font-weight: 900; background: #f0f0f0;
-      padding: 15px; border-radius: 12px; border: 2px dashed #ccc;
-      margin: 15px 0; display: block;
-    }
-    .copy-btn, .close-btn { 
-      padding: 12px; border-radius: 10px; font-weight: 900; border: none; cursor: pointer; width: 100%; margin-top: 8px;
-    }
-    .copy-btn { background: var(--pink); color: white; }
-    .close-btn { background: #eee; color: #333; }
+#spin-btn:active{
+  transform:translateY(4px);
+  box-shadow:0 2px 0 #aa4696;
+}
 
-    /* Toast */
-    .toast{ position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: black; color: white; padding: 10px 20px; border-radius: 20px; display: none; z-index: 200; }
-  </style>
+#spin-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+#modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(5px);
+  align-items:center;
+  justify-content:center;
+  z-index:50;
+}
+
+#modal{
+  width:90%;
+  max-width:350px;
+  background:#fff;
+  border-radius:24px;
+  padding:25px;
+  text-align:center;
+  color:#111;
+}
+
+.promo-code{
+  font-size:20px;
+  font-weight:900;
+  background:#f0f0f0;
+  padding:15px;
+  border-radius:12px;
+  border:2px dashed #ccc;
+  margin:15px 0;
+  letter-spacing:.08em;
+}
+
+.copy-btn{
+  padding:12px;
+  border-radius:10px;
+  font-weight:900;
+  border:none;
+  cursor:pointer;
+  width:100%;
+  background:var(--pink);
+  color:#fff;
+}
+</style>
 </head>
 
 <body>
-  <div class="shell">
-    <div class="header">
-      <span class="kicker"><span class="dot"></span> VIP EXCLUSIVE</span>
-      <h1>SPIN & WIN</h1>
-    </div>
 
-    <div class="main">
-      <div class="carousel-container">
-        <div class="pointer"></div>
-        <div class="prize-track" id="track"></div>
-      </div>
-
-      <div class="controls">
-        <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
-      </div>
-    </div>
+<div class="shell">
+  <div class="header">
+    <h1>SPIN & WIN</h1>
   </div>
 
-  <div id="modal-overlay">
-    <div id="modal">
-      <h2 style="margin:0">JACKPOT!</h2>
-      <p id="prize-display"></p>
-      <span class="promo-code" id="promo-code"></span>
-      <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
+  <div class="main">
+    <div class="carousel-container">
+      <div class="pointer"></div>
+      <div class="prize-track" id="track"></div>
+    </div>
+
+    <div class="controls">
+      <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
     </div>
   </div>
+</div>
 
-  <div class="toast" id="toast">Copied ✅</div>
+<div id="modal-overlay">
+  <div class="modal" id="modal">
+    <h2 style="margin:0">CONGRATS!</h2>
+    <div class="promo-code" id="promo-code"></div>
+    <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
+  </div>
+</div>
 
-  <script>
-    const prizes = [
-      { name: "Blue Sneakers", img: "https://cdn-icons-png.flaticon.com/512/2742/2742689.png", code: "VIP-SNKR" },
-      { name: "VIP Smartphone", img: "https://cdn-icons-png.flaticon.com/512/0/191.png", code: "VIP-PHON" },
-      { name: "Luxury Watch", img: "https://cdn-icons-png.flaticon.com/512/2237/2237676.png", code: "VIP-TIME" },
-      { name: "Music Beats", img: "https://cdn-icons-png.flaticon.com/512/1250/1250680.png", code: "VIP-BEAT" },
-      { name: "Cash Voucher", img: "https://cdn-icons-png.flaticon.com/512/2331/2331941.png", code: "VIP-CASH" }
-    ];
+<script>
+/** ======================
+ *  CONFIG
+ *  ====================== */
+const FIXED_CODE  = "kLu3qZ";               // ✅ NEW voucher code
+const STORAGE_KEY = "vip_spin_locked_v3";   // ✅ bump version to avoid old saved result
 
-    const track = document.getElementById("track");
-    const spinBtn = document.getElementById("spin-btn");
-    const modalOverlay = document.getElementById("modal-overlay");
-    const prizeDisplay = document.getElementById("prize-display");
-    const promoCodeEl = document.getElementById("promo-code");
+const prizes = [
+  { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" }, // 5FS image
+  { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" }, // 20FS image
+  { img:"https://ricomx.ft-crm.com/media-api/serve/32ac2add-c52a-418f-9cf9-9fde69416566_photo_6084903068915928885_x.jpg" }, // 50FS image
+  { img:"https://ricomx.ft-crm.com/media-api/serve/2f4f7c2d-2e7d-4151-b5f5-4691912d44ab_photo_6084903068915928884_x.jpg" }  // 100FS image (forced)
+];
 
-    const cardBaseWidth = 140;
-    const cardMargin = 10;
-    const fullCardWidth = cardBaseWidth + (cardMargin * 2); // 160px
-    let spinning = false;
+// ✅ ONLY x100 FREE SPINS is possible (index 3)
+const FORCED_INDEX = 3;
 
-    // ===== LocalStorage (Play Once) =====
-    const STORAGE_KEY = "vip_spin_result_v1";
+/** ======================
+ *  ELEMENTS
+ *  ====================== */
+const track = document.getElementById("track");
+const spinBtn = document.getElementById("spin-btn");
+const promoCodeEl = document.getElementById("promo-code");
+const modalOverlay = document.getElementById("modal-overlay");
 
-    function getSavedResult(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-      }catch(e){
-        return null;
-      }
-    }
+const cardWidth = 174; // 150 + margins
+let spinning = false;
 
-    function saveResult(result){
-      try{
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
-      }catch(e){}
-    }
+/** ======================
+ *  STORAGE HELPERS
+ *  ====================== */
+function getSaved(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
 
-    function lockToSavedResult(saved){
-      // Disable spin, keep the winning code visible when they return
-      spinBtn.disabled = true;
-      spinBtn.textContent = "ALREADY PLAYED";
+function saveLocked(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      code: FIXED_CODE,
+      ts: Date.now()
+    }));
+  }catch(e){}
+}
 
-      // Show their existing result in the modal (same UI, no new design)
-      prizeDisplay.innerText = saved.name;
-      promoCodeEl.innerText = saved.code;
-      modalOverlay.style.display = "flex";
+/** ======================
+ *  UI HELPERS
+ *  ====================== */
+function showModalWithCode(){
+  promoCodeEl.innerText = FIXED_CODE;
+  modalOverlay.style.display = "flex";
+}
 
-      // Keep the carousel in a neutral position (don’t re-spin)
-      track.style.transition = "none";
-      track.style.transform = "translateX(0)";
-    }
+function lockUI(){
+  spinBtn.disabled = true;
+  spinBtn.textContent = "ALREADY PLAYED";
+}
 
-    function init() {
-      // Create 80 cards for a long scrolling effect
-      for (let i = 0; i < 80; i++) {
-        const prize = prizes[i % prizes.length];
-        const card = document.createElement("div");
-        card.className = "prize-card";
-        card.innerHTML = `<img src="${prize.img}"><p>${prize.name}</p>`;
-        track.appendChild(card);
-      }
+function lockToSavedResult(saved){
+  lockUI();
+  showModalWithCode();
 
-      // If already played, restore result
-      const saved = getSavedResult();
-      if (saved && saved.code) {
-        lockToSavedResult(saved);
-      }
-    }
+  track.style.transition = "none";
+  track.style.transform = "translateX(0)";
+  spinning = false;
+}
 
-    function spinWheel() {
-      // If already saved, block replay
-      const saved = getSavedResult();
-      if (saved && saved.code) {
-        lockToSavedResult(saved);
-        return;
-      }
+/** ======================
+ *  INIT
+ *  ====================== */
+function init(){
+  for(let i=0;i<80;i++){
+    const prize = prizes[i % prizes.length];
+    const card = document.createElement("div");
+    card.className = "prize-card";
+    card.innerHTML = `<img src="${prize.img}" alt="">`;
+    track.appendChild(card);
+  }
 
-      if (spinning) return;
-      spinning = true;
-      spinBtn.disabled = true;
+  const saved = getSaved();
+  if(saved && saved.code){
+    lockToSavedResult(saved);
+  }
+}
 
-      const targetIndex = 60 + Math.floor(Math.random() * 10); // 60..69
-      const winner = prizes[targetIndex % prizes.length];
+/** ======================
+ *  SPIN
+ *  ====================== */
+function spinWheel(){
+  const saved = getSaved();
+  if(saved && saved.code){
+    lockToSavedResult(saved);
+    return;
+  }
 
-      const containerWidth = document.querySelector(".carousel-container").offsetWidth;
-      const centerPoint = containerWidth / 2;
-      const finalOffset = (targetIndex * fullCardWidth) + (fullCardWidth / 2) - centerPoint;
+  if(spinning) return;
+  spinning = true;
+  spinBtn.disabled = true;
 
-      track.style.transition = "transform 4s cubic-bezier(0.12, 0, 0.08, 1)";
-      track.style.transform = `translateX(-${finalOffset}px)`;
+  // pick a target index (60..69) that maps to FORCED_INDEX
+  const base = 60 + Math.floor(Math.random() * 10); // 60..69
+  const targetIndex = base - (base % prizes.length) + FORCED_INDEX;
 
-      setTimeout(() => {
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff75e2', '#ffffff'] });
+  const containerWidth = document.querySelector(".carousel-container").offsetWidth;
+  const centerPoint = containerWidth / 2;
+  const finalOffset = (targetIndex * cardWidth) + (cardWidth / 2) - centerPoint;
 
-        prizeDisplay.innerText = winner.name;
-        promoCodeEl.innerText = winner.code;
-        modalOverlay.style.display = "flex";
+  track.style.transition = "transform 4s cubic-bezier(0.12,0,0.08,1)";
+  track.style.transform = `translateX(-${finalOffset}px)`;
 
-        // Save permanently (play once)
-        saveResult({ name: winner.name, code: winner.code, ts: Date.now() });
+  setTimeout(()=>{
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#ff75e2', '#ffffff']
+    });
 
-        // Lock button for future visits
-        spinBtn.disabled = true;
-        spinBtn.textContent = "ALREADY PLAYED";
+    showModalWithCode();
+    saveLocked();
+    lockUI();
+    spinning = false;
+  }, 4100);
+}
 
-        spinning = false;
-      }, 4100);
-    }
+/** ======================
+ *  COPY
+ *  ====================== */
+function copyCode(){
+  navigator.clipboard.writeText(FIXED_CODE).catch(()=>{});
+}
 
-    function closeModal() {
-      // If they already have a saved result, keep it locked (do NOT reset)
-      const saved = getSavedResult();
-      modalOverlay.style.display = "none";
+init();
+</script>
 
-      if (saved && saved.code) {
-        // Keep locked, keep track neutral
-        spinBtn.disabled = true;
-        spinBtn.textContent = "ALREADY PLAYED";
-        track.style.transition = "none";
-        track.style.transform = "translateX(0)";
-        spinning = false;
-        return;
-      }
-
-      // (Fallback) if no saved result, reset like original
-      spinBtn.disabled = false;
-      spinBtn.textContent = "SPIN NOW";
-      spinning = false;
-      track.style.transition = "none";
-      track.style.transform = "translateX(0)";
-    }
-
-    function copyCode() {
-      const code = promoCodeEl.innerText || "";
-      navigator.clipboard.writeText(code).catch(()=>{});
-      const t = document.getElementById("toast");
-      t.style.display = "block";
-      setTimeout(() => t.style.display = "none", 1500);
-    }
-
-    init();
-  </script>
 </body>
 </html>
