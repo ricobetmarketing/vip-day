@@ -14,6 +14,11 @@
   --text:#f5f7ff;
   --red:#ff4d4d;
   --shadow: 0 22px 60px rgba(0,0,0,.55);
+
+  /* ✅ Responsive sizing */
+  --card: clamp(96px, 24vw, 150px);
+  --card-gap: clamp(8px, 2.8vw, 12px);
+  --carousel-h: clamp(130px, 28vw, 180px);
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,6 +33,7 @@ body{
   justify-content:center;
   font-family: system-ui, -apple-system, sans-serif;
   color:var(--text);
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
 .shell{
@@ -47,7 +53,7 @@ body{
 
 .header h1{
   margin:0;
-  font-size: clamp(24px, 6vw, 40px);
+  font-size: clamp(22px, 6vw, 40px);
   background: linear-gradient(180deg, #fff, var(--pink));
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
@@ -57,7 +63,7 @@ body{
 
 .carousel-container{
   position:relative;
-  height:180px;
+  height:var(--carousel-h);
   border-radius:20px;
   background:rgba(0,0,0,.35);
   overflow:hidden;
@@ -83,9 +89,10 @@ body{
 }
 
 .prize-card{
-  min-width:150px;
-  height:150px;
-  margin:0 12px;
+  min-width:var(--card);
+  width:var(--card);
+  height:var(--card);
+  margin:0 var(--card-gap);
   border-radius:22px;
   overflow:hidden;
   flex-shrink:0;
@@ -137,6 +144,7 @@ body{
   align-items:center;
   justify-content:center;
   z-index:50;
+  padding: 16px;
 }
 
 #modal{
@@ -158,6 +166,7 @@ body{
   border:2px dashed #ccc;
   margin:15px 0;
   letter-spacing:.08em;
+  word-break: break-word;
 }
 
 .copy-btn{
@@ -169,6 +178,22 @@ body{
   width:100%;
   background:var(--pink);
   color:#fff;
+}
+
+/* ✅ Mobile tuning (fix “ONE BIG THING”) */
+@media (max-width: 420px){
+  .main{ padding:14px; }
+  .header{ padding:18px 12px 8px; }
+  .pointer{
+    border-left:12px solid transparent;
+    border-right:12px solid transparent;
+    border-top:18px solid var(--red);
+  }
+  #spin-btn{
+    width:100%;
+    padding:14px 18px;
+    font-size:16px;
+  }
 }
 </style>
 </head>
@@ -225,8 +250,21 @@ const spinBtn = document.getElementById("spin-btn");
 const promoCodeEl = document.getElementById("promo-code");
 const modalOverlay = document.getElementById("modal-overlay");
 
-const cardWidth = 174; // 150 + margins
+let cardWidth = 174; // will be recalculated responsively
 let spinning = false;
+
+/** ======================
+ *  RESPONSIVE WIDTH CALC
+ *  ====================== */
+function computeCardWidth(){
+  const first = track.querySelector(".prize-card");
+  if(!first) return;
+  const cs = getComputedStyle(first);
+  const w = first.getBoundingClientRect().width;
+  const ml = parseFloat(cs.marginLeft) || 0;
+  const mr = parseFloat(cs.marginRight) || 0;
+  cardWidth = w + ml + mr;
+}
 
 /** ======================
  *  STORAGE HELPERS
@@ -285,6 +323,11 @@ function init(){
     track.appendChild(card);
   }
 
+  computeCardWidth();
+  window.addEventListener("resize", () => {
+    computeCardWidth();
+  });
+
   // if already played, lock from localStorage
   const saved = getSaved();
   if(saved && saved.code){
@@ -306,6 +349,8 @@ function spinWheel(){
   if(spinning) return;
   spinning = true;
   spinBtn.disabled = true;
+
+  computeCardWidth();
 
   // pick a target index (60..69) that maps to FORCED_INDEX
   const base = 60 + Math.floor(Math.random() * 10); // 60..69
