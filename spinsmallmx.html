@@ -256,6 +256,9 @@ body{
 const FIXED_CODE = "kZkyy4";
 const STORAGE_KEY = "vip_spin_locked_v1";
 
+/* ✅ VIP DAY END (UTC-6): after day 15 -> day 16 00:00 (UTC-6) locks */
+const END_DAY_UTC6 = 15;
+
 const prizes = [
   { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" },
   { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" },
@@ -279,16 +282,14 @@ let cardWidth = 174;
 let spinning = false;
 
 /** ======================
- *  RESPONSIVE WIDTH CALC
+ *  UTC-6 END CHECK
  *  ====================== */
-function computeCardWidth(){
-  const first = track.querySelector(".prize-card");
-  if(!first) return;
-  const cs = getComputedStyle(first);
-  const w = first.getBoundingClientRect().width;
-  const ml = parseFloat(cs.marginLeft) || 0;
-  const mr = parseFloat(cs.marginRight) || 0;
-  cardWidth = w + ml + mr;
+function isVipDayEndedUTC6(){
+  const now = new Date();
+  const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const utc6Ms = utcMs + (-6 * 60 * 60000);
+  const d = new Date(utc6Ms);
+  return d.getDate() > END_DAY_UTC6; // day 16+ => ended
 }
 
 /** ======================
@@ -339,6 +340,39 @@ function lockToSavedResult(saved){
   spinning = false;
 }
 
+/* ✅ Ended UI */
+function lockEndedUI(){
+  spinBtn.disabled = true;
+  spinBtn.textContent = "DÍA VIP FINALIZADO";
+
+  const title = document.querySelector("#modal h2");
+  if(title) title.textContent = "🔒 DÍA VIP FINALIZADO";
+
+  promoCodeEl.innerText = "Vuelve en el próximo evento VIP.";
+  copyBtn.style.display = "none";
+  modalOverlay.style.display = "flex";
+
+  confetti({
+    particleCount: 40,
+    spread: 35,
+    origin: { y: 0.55 },
+    colors: ['#ffffff', '#ff4d4d']
+  });
+}
+
+/** ======================
+ *  RESPONSIVE WIDTH CALC
+ *  ====================== */
+function computeCardWidth(){
+  const first = track.querySelector(".prize-card");
+  if(!first) return;
+  const cs = getComputedStyle(first);
+  const w = first.getBoundingClientRect().width;
+  const ml = parseFloat(cs.marginLeft) || 0;
+  const mr = parseFloat(cs.marginRight) || 0;
+  cardWidth = w + ml + mr;
+}
+
 /** ======================
  *  INIT
  *  ====================== */
@@ -354,6 +388,12 @@ function init(){
   computeCardWidth();
   window.addEventListener("resize", computeCardWidth);
 
+  /* ✅ VIP day ended (UTC-6) => lock immediately */
+  if(isVipDayEndedUTC6()){
+    lockEndedUI();
+    return;
+  }
+
   const saved = getSaved();
   if(saved && saved.code){
     lockToSavedResult(saved);
@@ -364,6 +404,12 @@ function init(){
  *  SPIN
  *  ====================== */
 function spinWheel(){
+  /* ✅ Block spin if VIP day ended (UTC-6) */
+  if(isVipDayEndedUTC6()){
+    lockEndedUI();
+    return;
+  }
+
   const saved = getSaved();
   if(saved && saved.code){
     lockToSavedResult(saved);
