@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es-MX">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>DÍA VIP - Gira y Gana</title>
+<title>DIA VIP - Gire e Ganhe</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
@@ -15,6 +15,7 @@
   --red:#ff4d4d;
   --shadow: 0 22px 60px rgba(0,0,0,.55);
 
+  /* ✅ responsive sizing */
   --card: clamp(96px, 24vw, 150px);
   --card-gap: clamp(8px, 2.8vw, 12px);
   --carousel-h: clamp(130px, 28vw, 180px);
@@ -143,7 +144,7 @@ body{
   align-items:center;
   justify-content:center;
   z-index:50;
-  padding: 16px;
+  padding:16px;
 }
 
 #modal{
@@ -204,6 +205,7 @@ body{
   bottom:-6px;
 }
 
+/* ✅ Mobile tuning */
 @media (max-width: 420px){
   .main{ padding:14px; }
   .header{ padding:18px 12px 8px; }
@@ -225,7 +227,7 @@ body{
 
 <div class="shell">
   <div class="header">
-    <h1>GIRA Y GANA</h1>
+    <h1>GIRE E GANHE</h1>
   </div>
 
   <div class="main">
@@ -235,17 +237,17 @@ body{
     </div>
 
     <div class="controls">
-      <button id="spin-btn" onclick="spinWheel()">GIRAR AHORA</button>
+      <button id="spin-btn" onclick="spinWheel()">GIRAR AGORA</button>
     </div>
   </div>
 </div>
 
 <div id="modal-overlay">
-  <div id="modal">
-    <h2 style="margin:0">¡FELICIDADES!</h2>
+  <div class="modal" id="modal">
+    <h2 style="margin:0">PARABÉNS!</h2>
     <div class="promo-code" id="promo-code"></div>
     <button class="copy-btn" id="copy-btn" type="button">COPIAR CÓDIGO</button>
-    <div class="toast" id="toast">¡Copiado!</div>
+    <div class="toast" id="toast">Copiado!</div>
   </div>
 </div>
 
@@ -253,17 +255,18 @@ body{
 /** ======================
  *  CONFIG
  *  ====================== */
-const FIXED_CODE = "kZkyy4";
-const STORAGE_KEY = "vip_spin_locked_v1";
+const FIXED_CODE  = "rbzSNb";               // ✅ NEW voucher code
+const STORAGE_KEY = "vip_spin_locked_v2";   // ✅ bump version to avoid old saved result
 
 const prizes = [
-  { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" },
-  { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" },
-  { img:"https://ricomx.ft-crm.com/media-api/serve/32ac2add-c52a-418f-9cf9-9fde69416566_photo_6084903068915928885_x.jpg" },
-  { img:"https://ricomx.ft-crm.com/media-api/serve/2f4f7c2d-2e7d-4151-b5f5-4691912d44ab_photo_6084903068915928884_x.jpg" }
+  { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" }, // 5FS image
+  { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" }, // 20FS image
+  { img:"https://ricomx.ft-crm.com/media-api/serve/32ac2add-c52a-418f-9cf9-9fde69416566_photo_6084903068915928885_x.jpg" }, // 50FS image (forced)
+  { img:"https://ricomx.ft-crm.com/media-api/serve/2f4f7c2d-2e7d-4151-b5f5-4691912d44ab_photo_6084903068915928884_x.jpg" }  // 100FS image
 ];
 
-const FORCED_INDEX = 1;
+// ✅ ONLY x50 FREE SPINS is possible (index 2)
+const FORCED_INDEX = 2;
 
 /** ======================
  *  ELEMENTS
@@ -328,12 +331,13 @@ function showModalWithCode(){
 
 function lockUI(){
   spinBtn.disabled = true;
-  spinBtn.textContent = "YA JUGASTE";
+  spinBtn.textContent = "JÁ JOGOU";
 }
 
 function lockToSavedResult(saved){
   lockUI();
   showModalWithCode();
+
   track.style.transition = "none";
   track.style.transform = "translateX(0)";
   spinning = false;
@@ -376,7 +380,7 @@ function spinWheel(){
 
   computeCardWidth();
 
-  const base = 60 + Math.floor(Math.random() * 10);
+  const base = 60 + Math.floor(Math.random() * 10); // 60..69
   const targetIndex = base - (base % prizes.length) + FORCED_INDEX;
 
   const containerWidth = document.querySelector(".carousel-container").offsetWidth;
@@ -407,16 +411,16 @@ function spinWheel(){
 async function copyCode(){
   const text = FIXED_CODE;
 
-  // 1) Modern Clipboard API (requires secure context: https)
+  // 1) Clipboard API (works on https)
   try{
     if(navigator.clipboard && window.isSecureContext){
       await navigator.clipboard.writeText(text);
-      showToast("¡Copiado!");
+      showToast("Copiado!");
       return;
     }
-  }catch(e){}
+  }catch(e){ /* fallback */ }
 
-  // 2) Fallback: hidden textarea + execCommand
+  // 2) Fallback: textarea + execCommand (older iOS / browsers)
   try{
     const ta = document.createElement("textarea");
     ta.value = text;
@@ -432,20 +436,16 @@ async function copyCode(){
     const ok = document.execCommand("copy");
     document.body.removeChild(ta);
 
-    if(ok){
-      showToast("¡Copiado!");
-    }else{
-      showToast("Mantén presionado para copiar");
-    }
+    if(ok) showToast("Copiado!");
+    else showToast("Toque e segure para copiar");
   }catch(e){
-    showToast("Mantén presionado para copiar");
+    showToast("Toque e segure para copiar");
   }
 }
 
-/** ✅ Bind button reliably (instead of inline onclick) */
+/* ✅ ensure button always works */
 copyBtn.addEventListener("click", copyCode);
 
-/** start */
 init();
 </script>
 
