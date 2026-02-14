@@ -256,6 +256,9 @@ body{
 const FIXED_CODE = "kZkyy4";
 const STORAGE_KEY = "vip_spin_locked_v1";
 
+/* ✅ VIP DAY END (UTC-3): after day 15 -> day 16 00:00 (UTC-3) locks */
+const END_DAY_UTC3 = 15;
+
 const prizes = [
   { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" },
   { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" },
@@ -277,6 +280,20 @@ const toast = document.getElementById("toast");
 
 let cardWidth = 174;
 let spinning = false;
+
+/** ======================
+ *  UTC-3 END CHECK
+ *  ====================== */
+function isVipDayEndedUTC3(){
+  // Convert "now" to UTC-3 "wall clock" by shifting time.
+  const now = new Date();
+  const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const utc3Ms = utcMs + (-3 * 60 * 60000);
+  const d = new Date(utc3Ms);
+
+  // If UTC-3 date is after the 15th (i.e., day >= 16), end it.
+  return d.getDate() > END_DAY_UTC3;
+}
 
 /** ======================
  *  RESPONSIVE WIDTH CALC
@@ -339,6 +356,28 @@ function lockToSavedResult(saved){
   spinning = false;
 }
 
+/* ✅ Ended UI */
+function lockEndedUI(){
+  spinBtn.disabled = true;
+  spinBtn.textContent = "DIA VIP ENCERRADO";
+
+  // Reuse the same modal as a "LOCKED" screen (no code / no copy)
+  const title = document.querySelector("#modal h2");
+  if(title) title.textContent = "🔒 DIA VIP ENCERRADO";
+
+  promoCodeEl.innerText = "Volte no próximo evento VIP.";
+  copyBtn.style.display = "none";
+  modalOverlay.style.display = "flex";
+
+  // Small lock-like effect
+  confetti({
+    particleCount: 40,
+    spread: 35,
+    origin: { y: 0.55 },
+    colors: ['#ffffff', '#ff4d4d']
+  });
+}
+
 /** ======================
  *  INIT
  *  ====================== */
@@ -354,6 +393,12 @@ function init(){
   computeCardWidth();
   window.addEventListener("resize", computeCardWidth);
 
+  // ✅ If VIP day ended (UTC-3), lock immediately (highest priority)
+  if(isVipDayEndedUTC3()){
+    lockEndedUI();
+    return;
+  }
+
   const saved = getSaved();
   if(saved && saved.code){
     lockToSavedResult(saved);
@@ -364,6 +409,12 @@ function init(){
  *  SPIN
  *  ====================== */
 function spinWheel(){
+  // ✅ Block spin if VIP day ended (UTC-3)
+  if(isVipDayEndedUTC3()){
+    lockEndedUI();
+    return;
+  }
+
   const saved = getSaved();
   if(saved && saved.code){
     lockToSavedResult(saved);
