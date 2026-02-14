@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es-MX">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>VIP DAY - Spin & Win</title>
+<title>DÍA VIP - Gira y Gana</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
@@ -14,6 +14,11 @@
   --text:#f5f7ff;
   --red:#ff4d4d;
   --shadow: 0 22px 60px rgba(0,0,0,.55);
+
+  /* ✅ responsive sizing */
+  --card: clamp(96px, 24vw, 150px);
+  --card-gap: clamp(8px, 2.8vw, 12px);
+  --carousel-h: clamp(130px, 28vw, 180px);
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,6 +33,7 @@ body{
   justify-content:center;
   font-family: system-ui, -apple-system, sans-serif;
   color:var(--text);
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
 .shell{
@@ -47,7 +53,7 @@ body{
 
 .header h1{
   margin:0;
-  font-size: clamp(24px, 6vw, 40px);
+  font-size: clamp(22px, 6vw, 40px);
   background: linear-gradient(180deg, #fff, var(--pink));
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
@@ -57,7 +63,7 @@ body{
 
 .carousel-container{
   position:relative;
-  height:180px;
+  height:var(--carousel-h);
   border-radius:20px;
   background:rgba(0,0,0,.35);
   overflow:hidden;
@@ -83,9 +89,10 @@ body{
 }
 
 .prize-card{
-  min-width:150px;
-  height:150px;
-  margin:0 12px;
+  min-width:var(--card);
+  width:var(--card);
+  height:var(--card);
+  margin:0 var(--card-gap);
   border-radius:22px;
   overflow:hidden;
   flex-shrink:0;
@@ -137,6 +144,7 @@ body{
   align-items:center;
   justify-content:center;
   z-index:50;
+  padding:16px;
 }
 
 #modal{
@@ -147,6 +155,7 @@ body{
   padding:25px;
   text-align:center;
   color:#111;
+  position:relative;
 }
 
 .promo-code{
@@ -158,6 +167,7 @@ body{
   border:2px dashed #ccc;
   margin:15px 0;
   letter-spacing:.08em;
+  word-break: break-word;
 }
 
 .copy-btn{
@@ -170,6 +180,46 @@ body{
   background:var(--pink);
   color:#fff;
 }
+
+.copy-btn:active{ transform: translateY(1px); }
+
+.toast{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:-14px;
+  background:#111;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, bottom .25s ease;
+  white-space:nowrap;
+}
+
+.toast.show{
+  opacity:1;
+  bottom:-6px;
+}
+
+/* ✅ Mobile tuning */
+@media (max-width: 420px){
+  .main{ padding:14px; }
+  .header{ padding:18px 12px 8px; }
+  .pointer{
+    border-left:12px solid transparent;
+    border-right:12px solid transparent;
+    border-top:18px solid var(--red);
+  }
+  #spin-btn{
+    width:100%;
+    padding:14px 18px;
+    font-size:16px;
+  }
+}
 </style>
 </head>
 
@@ -177,7 +227,7 @@ body{
 
 <div class="shell">
   <div class="header">
-    <h1>SPIN & WIN</h1>
+    <h1>GIRA Y GANA</h1>
   </div>
 
   <div class="main">
@@ -187,16 +237,17 @@ body{
     </div>
 
     <div class="controls">
-      <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
+      <button id="spin-btn" onclick="spinWheel()">GIRAR AHORA</button>
     </div>
   </div>
 </div>
 
 <div id="modal-overlay">
   <div class="modal" id="modal">
-    <h2 style="margin:0">CONGRATS!</h2>
+    <h2 style="margin:0">¡FELICIDADES!</h2>
     <div class="promo-code" id="promo-code"></div>
-    <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
+    <button class="copy-btn" id="copy-btn" type="button">COPIAR CÓDIGO</button>
+    <div class="toast" id="toast">¡Copiado!</div>
   </div>
 </div>
 
@@ -224,9 +275,24 @@ const track = document.getElementById("track");
 const spinBtn = document.getElementById("spin-btn");
 const promoCodeEl = document.getElementById("promo-code");
 const modalOverlay = document.getElementById("modal-overlay");
+const copyBtn = document.getElementById("copy-btn");
+const toast = document.getElementById("toast");
 
-const cardWidth = 174; // 150 + margins
+let cardWidth = 174;
 let spinning = false;
+
+/** ======================
+ *  RESPONSIVE WIDTH CALC
+ *  ====================== */
+function computeCardWidth(){
+  const first = track.querySelector(".prize-card");
+  if(!first) return;
+  const cs = getComputedStyle(first);
+  const w = first.getBoundingClientRect().width;
+  const ml = parseFloat(cs.marginLeft) || 0;
+  const mr = parseFloat(cs.marginRight) || 0;
+  cardWidth = w + ml + mr;
+}
 
 /** ======================
  *  STORAGE HELPERS
@@ -251,6 +317,13 @@ function saveLocked(){
 /** ======================
  *  UI HELPERS
  *  ====================== */
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove("show"), 1100);
+}
+
 function showModalWithCode(){
   promoCodeEl.innerText = FIXED_CODE;
   modalOverlay.style.display = "flex";
@@ -258,13 +331,12 @@ function showModalWithCode(){
 
 function lockUI(){
   spinBtn.disabled = true;
-  spinBtn.textContent = "ALREADY PLAYED";
+  spinBtn.textContent = "YA JUGASTE";
 }
 
 function lockToSavedResult(saved){
   lockUI();
   showModalWithCode();
-
   track.style.transition = "none";
   track.style.transform = "translateX(0)";
   spinning = false;
@@ -281,6 +353,9 @@ function init(){
     card.innerHTML = `<img src="${prize.img}" alt="">`;
     track.appendChild(card);
   }
+
+  computeCardWidth();
+  window.addEventListener("resize", computeCardWidth);
 
   const saved = getSaved();
   if(saved && saved.code){
@@ -302,7 +377,8 @@ function spinWheel(){
   spinning = true;
   spinBtn.disabled = true;
 
-  // pick a target index (60..69) that maps to FORCED_INDEX
+  computeCardWidth();
+
   const base = 60 + Math.floor(Math.random() * 10); // 60..69
   const targetIndex = base - (base % prizes.length) + FORCED_INDEX;
 
@@ -329,11 +405,45 @@ function spinWheel(){
 }
 
 /** ======================
- *  COPY
+ *  COPY (robust for GitHub Pages / iOS)
  *  ====================== */
-function copyCode(){
-  navigator.clipboard.writeText(FIXED_CODE).catch(()=>{});
+async function copyCode(){
+  const text = FIXED_CODE;
+
+  // 1) Clipboard API (works on https)
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      showToast("¡Copiado!");
+      return;
+    }
+  }catch(e){ /* fallback */ }
+
+  // 2) Fallback: textarea + execCommand (older iOS / browsers)
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "-9999px";
+    ta.style.left = "-9999px";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+
+    if(ok) showToast("¡Copiado!");
+    else showToast("Mantén presionado para copiar");
+  }catch(e){
+    showToast("Mantén presionado para copiar");
+  }
 }
+
+/* ✅ ensure button always works */
+copyBtn.addEventListener("click", copyCode);
 
 init();
 </script>
