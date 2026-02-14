@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>VIP DAY - Spin & Win</title>
+<title>DIA VIP - Gire & Ganhe</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
@@ -225,7 +225,7 @@ body{
 
 <div class="shell">
   <div class="header">
-    <h1>SPIN & WIN</h1>
+    <h1>GIRE &amp; GANHE</h1>
   </div>
 
   <div class="main">
@@ -235,17 +235,17 @@ body{
     </div>
 
     <div class="controls">
-      <button id="spin-btn" onclick="spinWheel()">SPIN NOW</button>
+      <button id="spin-btn" onclick="spinWheel()">GIRAR AGORA</button>
     </div>
   </div>
 </div>
 
 <div id="modal-overlay">
   <div id="modal">
-    <h2 style="margin:0">CONGRATS!</h2>
+    <h2 style="margin:0">PARABÉNS!</h2>
     <div class="promo-code" id="promo-code"></div>
-    <button class="copy-btn" id="copy-btn" type="button">COPY CODE</button>
-    <div class="toast" id="toast">Copied!</div>
+    <button class="copy-btn" id="copy-btn" type="button">COPIAR CÓDIGO</button>
+    <div class="toast" id="toast">Copiado!</div>
   </div>
 </div>
 
@@ -328,7 +328,7 @@ function showModalWithCode(){
 
 function lockUI(){
   spinBtn.disabled = true;
-  spinBtn.textContent = "ALREADY PLAYED";
+  spinBtn.textContent = "JÁ JOGOU";
 }
 
 function lockToSavedResult(saved){
@@ -407,16 +407,14 @@ function spinWheel(){
 async function copyCode(){
   const text = FIXED_CODE;
 
-  // 1) Modern Clipboard API (requires secure context: https)
   try{
     if(navigator.clipboard && window.isSecureContext){
       await navigator.clipboard.writeText(text);
-      showToast("Copied!");
+      showToast("Copiado!");
       return;
     }
-  }catch(e){ /* fallthrough */ }
+  }catch(e){}
 
-  // 2) Fallback: hidden textarea + execCommand
   try{
     const ta = document.createElement("textarea");
     ta.value = text;
@@ -428,24 +426,22 @@ async function copyCode(){
     document.body.appendChild(ta);
     ta.focus();
     ta.select();
-    ta.setSelectionRange(0, ta.value.length); // iOS
+    ta.setSelectionRange(0, ta.value.length);
     const ok = document.execCommand("copy");
     document.body.removeChild(ta);
 
     if(ok){
-      showToast("Copied!");
+      showToast("Copiado!");
     }else{
-      showToast("Hold to copy");
+      showToast("Toque e segure para copiar");
     }
   }catch(e){
-    showToast("Hold to copy");
+    showToast("Toque e segure para copiar");
   }
 }
 
-/** ✅ Bind button reliably (instead of inline onclick) */
 copyBtn.addEventListener("click", copyCode);
 
-/** start */
 init();
 </script>
 
