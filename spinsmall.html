@@ -15,7 +15,6 @@
   --red:#ff4d4d;
   --shadow: 0 22px 60px rgba(0,0,0,.55);
 
-  /* ✅ Responsive sizing */
   --card: clamp(96px, 24vw, 150px);
   --card-gap: clamp(8px, 2.8vw, 12px);
   --carousel-h: clamp(130px, 28vw, 180px);
@@ -155,6 +154,7 @@ body{
   padding:25px;
   text-align:center;
   color:#111;
+  position:relative;
 }
 
 .promo-code{
@@ -180,7 +180,30 @@ body{
   color:#fff;
 }
 
-/* ✅ Mobile tuning (fix “ONE BIG THING”) */
+.copy-btn:active{ transform: translateY(1px); }
+
+.toast{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:-14px;
+  background:#111;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, bottom .25s ease;
+  white-space:nowrap;
+}
+
+.toast.show{
+  opacity:1;
+  bottom:-6px;
+}
+
 @media (max-width: 420px){
   .main{ padding:14px; }
   .header{ padding:18px 12px 8px; }
@@ -221,7 +244,8 @@ body{
   <div id="modal">
     <h2 style="margin:0">CONGRATS!</h2>
     <div class="promo-code" id="promo-code"></div>
-    <button class="copy-btn" onclick="copyCode()">COPY CODE</button>
+    <button class="copy-btn" id="copy-btn" type="button">COPY CODE</button>
+    <div class="toast" id="toast">Copied!</div>
   </div>
 </div>
 
@@ -229,17 +253,16 @@ body{
 /** ======================
  *  CONFIG
  *  ====================== */
-const FIXED_CODE = "kZkyy4";               // ✅ your voucher code
-const STORAGE_KEY = "vip_spin_locked_v1";  // ✅ localStorage lock key
+const FIXED_CODE = "kZkyy4";
+const STORAGE_KEY = "vip_spin_locked_v1";
 
 const prizes = [
-  { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" }, // 5FS image
-  { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" }, // 20FS image (forced)
-  { img:"https://ricomx.ft-crm.com/media-api/serve/32ac2add-c52a-418f-9cf9-9fde69416566_photo_6084903068915928885_x.jpg" }, // 50FS image
-  { img:"https://ricomx.ft-crm.com/media-api/serve/2f4f7c2d-2e7d-4151-b5f5-4691912d44ab_photo_6084903068915928884_x.jpg" }  // 100FS image
+  { img:"https://ricomx.ft-crm.com/media-api/serve/1a457da2-bdef-4c84-8202-dc91887883d4_photo_6084903068915928886_x.jpg" },
+  { img:"https://ricomx.ft-crm.com/media-api/serve/c2b75030-9799-4956-958d-e22f7be3a408_photo_6084903068915928887_x.jpg" },
+  { img:"https://ricomx.ft-crm.com/media-api/serve/32ac2add-c52a-418f-9cf9-9fde69416566_photo_6084903068915928885_x.jpg" },
+  { img:"https://ricomx.ft-crm.com/media-api/serve/2f4f7c2d-2e7d-4151-b5f5-4691912d44ab_photo_6084903068915928884_x.jpg" }
 ];
 
-// ALWAYS LAND ON 20FS (index 1)
 const FORCED_INDEX = 1;
 
 /** ======================
@@ -249,8 +272,10 @@ const track = document.getElementById("track");
 const spinBtn = document.getElementById("spin-btn");
 const promoCodeEl = document.getElementById("promo-code");
 const modalOverlay = document.getElementById("modal-overlay");
+const copyBtn = document.getElementById("copy-btn");
+const toast = document.getElementById("toast");
 
-let cardWidth = 174; // will be recalculated responsively
+let cardWidth = 174;
 let spinning = false;
 
 /** ======================
@@ -289,6 +314,13 @@ function saveLocked(){
 /** ======================
  *  UI HELPERS
  *  ====================== */
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove("show"), 1100);
+}
+
 function showModalWithCode(){
   promoCodeEl.innerText = FIXED_CODE;
   modalOverlay.style.display = "flex";
@@ -301,10 +333,7 @@ function lockUI(){
 
 function lockToSavedResult(saved){
   lockUI();
-  // show saved code immediately (same code always)
   showModalWithCode();
-
-  // keep carousel neutral (no re-spin)
   track.style.transition = "none";
   track.style.transform = "translateX(0)";
   spinning = false;
@@ -314,7 +343,6 @@ function lockToSavedResult(saved){
  *  INIT
  *  ====================== */
 function init(){
-  // build long track
   for(let i=0;i<80;i++){
     const prize = prizes[i % prizes.length];
     const card = document.createElement("div");
@@ -324,11 +352,8 @@ function init(){
   }
 
   computeCardWidth();
-  window.addEventListener("resize", () => {
-    computeCardWidth();
-  });
+  window.addEventListener("resize", computeCardWidth);
 
-  // if already played, lock from localStorage
   const saved = getSaved();
   if(saved && saved.code){
     lockToSavedResult(saved);
@@ -339,7 +364,6 @@ function init(){
  *  SPIN
  *  ====================== */
 function spinWheel(){
-  // block replay if already saved
   const saved = getSaved();
   if(saved && saved.code){
     lockToSavedResult(saved);
@@ -352,8 +376,7 @@ function spinWheel(){
 
   computeCardWidth();
 
-  // pick a target index (60..69) that maps to FORCED_INDEX
-  const base = 60 + Math.floor(Math.random() * 10); // 60..69
+  const base = 60 + Math.floor(Math.random() * 10);
   const targetIndex = base - (base % prizes.length) + FORCED_INDEX;
 
   const containerWidth = document.querySelector(".carousel-container").offsetWidth;
@@ -371,7 +394,6 @@ function spinWheel(){
       colors: ['#ff75e2', '#ffffff']
     });
 
-    // show fixed code + lock permanently
     showModalWithCode();
     saveLocked();
     lockUI();
@@ -380,11 +402,48 @@ function spinWheel(){
 }
 
 /** ======================
- *  COPY
+ *  COPY (robust for GitHub Pages / iOS)
  *  ====================== */
-function copyCode(){
-  navigator.clipboard.writeText(FIXED_CODE).catch(()=>{});
+async function copyCode(){
+  const text = FIXED_CODE;
+
+  // 1) Modern Clipboard API (requires secure context: https)
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      showToast("Copied!");
+      return;
+    }
+  }catch(e){ /* fallthrough */ }
+
+  // 2) Fallback: hidden textarea + execCommand
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "-9999px";
+    ta.style.left = "-9999px";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length); // iOS
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+
+    if(ok){
+      showToast("Copied!");
+    }else{
+      showToast("Hold to copy");
+    }
+  }catch(e){
+    showToast("Hold to copy");
+  }
 }
+
+/** ✅ Bind button reliably (instead of inline onclick) */
+copyBtn.addEventListener("click", copyCode);
 
 /** start */
 init();
