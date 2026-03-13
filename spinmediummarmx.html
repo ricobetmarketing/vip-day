@@ -32,6 +32,7 @@ body{
   justify-content:center;
   font-family: system-ui, -apple-system, sans-serif;
   color:var(--text);
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
 }
 
 .shell{
@@ -71,6 +72,7 @@ body{
   position:absolute;
   top:0; left:50%;
   transform:translateX(-50%);
+  width:0; height:0;
   border-left:15px solid transparent;
   border-right:15px solid transparent;
   border-top:20px solid var(--red);
@@ -82,6 +84,7 @@ body{
   align-items:center;
   height:100%;
   transition: transform 4s cubic-bezier(0.12,0,0.08,1);
+  will-change: transform;
 }
 
 .prize-card{
@@ -91,12 +94,17 @@ body{
   margin:0 var(--card-gap);
   border-radius:22px;
   overflow:hidden;
+  flex-shrink:0;
+  background:transparent;
 }
 
 .prize-card img{
   width:100%;
   height:100%;
   object-fit:cover;
+  border-radius:22px;
+  user-select:none;
+  -webkit-user-drag:none;
 }
 
 .controls{
@@ -113,6 +121,7 @@ body{
   cursor:pointer;
   background:var(--pink);
   color:#000;
+  box-shadow:0 6px 0 #aa4696;
 }
 
 #spin-btn:disabled{
@@ -125,8 +134,11 @@ body{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.85);
+  backdrop-filter:blur(5px);
   align-items:center;
   justify-content:center;
+  z-index:50;
+  padding:16px;
 }
 
 #modal{
@@ -152,6 +164,7 @@ body{
 .copy-btn{
   padding:12px;
   border-radius:10px;
+  font-weight:900;
   border:none;
   cursor:pointer;
   width:100%;
@@ -169,8 +182,9 @@ body{
   padding:8px 12px;
   border-radius:999px;
   font-size:12px;
+  font-weight:800;
   opacity:0;
-  transition:0.25s;
+  transition:opacity .25s ease, bottom .25s ease;
 }
 
 .toast.show{
@@ -201,7 +215,7 @@ body{
 
 <div id="modal-overlay">
   <div id="modal">
-    <h2 id="modal-title">¡FELICIDADES!</h2>
+    <h2 style="margin:0">¡FELICIDADES!</h2>
     <div class="promo-code" id="promo-code"></div>
     <button class="copy-btn" id="copy-btn">COPIAR CÓDIGO</button>
     <div class="toast" id="toast">¡Copiado!</div>
@@ -209,8 +223,9 @@ body{
 </div>
 
 <script>
-const FIXED_CODE="wyu4Hp";
-const STORAGE_KEY="vip_spin_locked_v2";
+
+const FIXED_CODE="uq4kgr";
+const STORAGE_KEY="vip_spin_locked_v3";
 const END_DAY_UTC6=15;
 
 const prizes=[
@@ -220,7 +235,7 @@ const prizes=[
 {img:"https://ricomx.ft-crm.com/media-api/serve/2f4f7c2d-2e7d-4151-b5f5-4691912d44ab_photo_6084903068915928884_x.jpg"}
 ];
 
-const FORCED_INDEX=2;
+const FORCED_INDEX=3;
 
 const track=document.getElementById("track");
 const spinBtn=document.getElementById("spin-btn");
@@ -229,45 +244,82 @@ const modalOverlay=document.getElementById("modal-overlay");
 const copyBtn=document.getElementById("copy-btn");
 const toast=document.getElementById("toast");
 
+let cardWidth=174;
 let spinning=false;
 
+/* improved UTC-6 detection */
 function isVipDayEndedUTC6(){
+
 const now=new Date();
-const utcMs=now.getTime()+(now.getTimezoneOffset()*60000);
-const utc6Ms=utcMs+(-6*60*60000);
-const d=new Date(utc6Ms);
-return d.getDate()>END_DAY_UTC6;
+
+/* convert local time -> UTC */
+const utc=now.getTime()+now.getTimezoneOffset()*60000;
+
+/* convert UTC -> UTC-6 */
+const utc6=new Date(utc-6*60*60000);
+
+return utc6.getDate()>END_DAY_UTC6;
+
+}
+
+function computeCardWidth(){
+const first=track.querySelector(".prize-card");
+if(!first)return;
+const cs=getComputedStyle(first);
+const w=first.getBoundingClientRect().width;
+const ml=parseFloat(cs.marginLeft)||0;
+const mr=parseFloat(cs.marginRight)||0;
+cardWidth=w+ml+mr;
 }
 
 function getSaved(){
 try{
-return JSON.parse(localStorage.getItem(STORAGE_KEY));
+const raw=localStorage.getItem(STORAGE_KEY);
+if(!raw)return null;
+return JSON.parse(raw);
 }catch(e){return null;}
 }
 
 function saveLocked(){
-localStorage.setItem(STORAGE_KEY,JSON.stringify({code:FIXED_CODE}));
+localStorage.setItem(STORAGE_KEY,JSON.stringify({code:FIXED_CODE,ts:Date.now()}));
 }
 
-function showModal(){
+function showToast(msg){
+toast.textContent=msg;
+toast.classList.add("show");
+clearTimeout(showToast._t);
+showToast._t=setTimeout(()=>toast.classList.remove("show"),1100);
+}
+
+function showModalWithCode(){
 promoCodeEl.innerText=FIXED_CODE;
 modalOverlay.style.display="flex";
 }
 
+function lockUI(){
+spinBtn.disabled=true;
+spinBtn.textContent="YA JUGASTE";
+}
+
 function lockEndedUI(){
+
 spinBtn.disabled=true;
 spinBtn.textContent="DÍA VIP FINALIZADO";
 
-document.getElementById("modal-title").textContent="🔒 DÍA VIP FINALIZADO";
-promoCodeEl.innerText="El Día VIP ha terminado. Vuelve el próximo mes.";
+const title=document.querySelector("#modal h2");
+if(title)title.textContent="🔒 DÍA VIP FINALIZADO";
+
+promoCodeEl.innerText="Vuelve en el próximo evento VIP.";
 copyBtn.style.display="none";
-
 modalOverlay.style.display="flex";
-}
 
-function showToast(){
-toast.classList.add("show");
-setTimeout(()=>toast.classList.remove("show"),1200);
+confetti({
+particleCount:40,
+spread:35,
+origin:{y:0.55},
+colors:['#ffffff','#ff4d4d']
+});
+
 }
 
 function init(){
@@ -276,9 +328,12 @@ for(let i=0;i<80;i++){
 const prize=prizes[i%prizes.length];
 const card=document.createElement("div");
 card.className="prize-card";
-card.innerHTML=`<img src="${prize.img}">`;
+card.innerHTML=`<img src="${prize.img}" alt="">`;
 track.appendChild(card);
 }
+
+computeCardWidth();
+window.addEventListener("resize",computeCardWidth);
 
 if(isVipDayEndedUTC6()){
 lockEndedUI();
@@ -286,10 +341,11 @@ return;
 }
 
 const saved=getSaved();
-if(saved){
-spinBtn.disabled=true;
-showModal();
+if(saved&&saved.code){
+lockUI();
+showModalWithCode();
 }
+
 }
 
 function spinWheel(){
@@ -300,15 +356,27 @@ return;
 }
 
 const saved=getSaved();
-if(saved){
-showModal();
+if(saved&&saved.code){
+lockUI();
+showModalWithCode();
 return;
 }
 
 if(spinning)return;
 spinning=true;
-
 spinBtn.disabled=true;
+
+computeCardWidth();
+
+const base=60+Math.floor(Math.random()*10);
+const targetIndex=base-(base%prizes.length)+FORCED_INDEX;
+
+const containerWidth=document.querySelector(".carousel-container").offsetWidth;
+const centerPoint=containerWidth/2;
+const finalOffset=(targetIndex*cardWidth)+(cardWidth/2)-centerPoint;
+
+track.style.transition="transform 4s cubic-bezier(0.12,0,0.08,1)";
+track.style.transform=`translateX(-${finalOffset}px)`;
 
 setTimeout(()=>{
 
@@ -319,19 +387,42 @@ origin:{y:0.6},
 colors:['#ff75e2','#ffffff']
 });
 
+showModalWithCode();
 saveLocked();
-showModal();
+lockUI();
 spinning=false;
 
-},4000);
+},4100);
+
 }
 
-copyBtn.onclick=()=>{
-navigator.clipboard.writeText(FIXED_CODE);
-showToast();
-};
+async function copyCode(){
+
+const text=FIXED_CODE;
+
+try{
+if(navigator.clipboard&&window.isSecureContext){
+await navigator.clipboard.writeText(text);
+showToast("¡Copiado!");
+return;
+}
+}catch(e){}
+
+const ta=document.createElement("textarea");
+ta.value=text;
+document.body.appendChild(ta);
+ta.select();
+document.execCommand("copy");
+document.body.removeChild(ta);
+
+showToast("¡Copiado!");
+
+}
+
+copyBtn.addEventListener("click",copyCode);
 
 init();
+
 </script>
 
 </body>
